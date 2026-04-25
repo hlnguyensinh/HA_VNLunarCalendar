@@ -19,8 +19,8 @@
 
 ## ✨ Demo
 
-<img src="./screenshots/demo_day.gif" width="300" alt="VN Lunar Calendar - Day" />
-<img src="./screenshots/demo_night.gif" width="300" alt="VN Lunar Calendar - Night" />
+<img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_day.gif" width="300" alt="VN Lunar Calendar - Day" />
+<img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_night.gif" width="300" alt="VN Lunar Calendar - Night" />
 
 ---
 
