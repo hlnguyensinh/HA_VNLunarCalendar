@@ -1,3 +1,5 @@
+[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+
 # 🇻🇳 VN LUNAR CALENDAR
 
 <p align="center">
