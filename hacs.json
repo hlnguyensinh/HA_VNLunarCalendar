@@ -1,0 +1,11 @@
+{
+    "name": "VN Lunar Calendar",
+    "content_in_root": false,
+    "filename": "vn_lunar_calendar.js",
+    "render_readme": true,
+    "homeassistant": "2023.0.0",
+    "country": ["VN"],
+    "iot_class": "local_push",
+    "domains": [],
+    "zip_release": false
+}
