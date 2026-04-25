@@ -46,9 +46,9 @@ https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_l
 
 ```yaml
 - type: custom:vn-lunar-calendar
-  background_day: https://github.com/hlnguyensinh/HA_VNLunarCalendar/assets/whiteflower.jpg
-  background_night: https://github.com/hlnguyensinh/HA_VNLunarCalendar/assets/night_fullmoon1.jpg
-  background_nighthalf: https://github.com/hlnguyensinh/HA_VNLunarCalendar/assets/night_halfmoon.jpg
+  background_day: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
+  background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
+  background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
 ```
 
 ---

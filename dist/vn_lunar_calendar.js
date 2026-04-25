@@ -836,9 +836,15 @@ class VnLunarCalendar extends HTMLElement {
   }
 
   getStyle(date) {
-    const bg_day = this.config?.background_day || "./assets/whiteflower.jpg";
-    const bg_night = this.config?.background_night || bg_day;
-    const bg_night_half = this.config?.background_nighthalf || bg_night;
+    const bg_day =
+      this.config?.background_day ||
+      "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg";
+    const bg_night =
+      this.config?.background_night ||
+      "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon2.jpg";
+    const bg_night_half =
+      this.config?.background_nighthalf ||
+      "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg";
 
     const now = this.presentDate;
     let isNight = false;
