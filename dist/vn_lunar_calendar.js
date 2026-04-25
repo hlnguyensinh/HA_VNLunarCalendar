@@ -14,8 +14,6 @@ class Lunar_HoNgocDuc {
    * -----------------------------------------------------------------------------------
    */
 
-  CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
-  CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
   SOLAR_TERM_EMOJI = [
     // 🌸 Xuân
     ["Xuân phân", "🌸"],
@@ -52,6 +50,14 @@ class Lunar_HoNgocDuc {
     ["Kinh trập", "⚡"],
   ];
 
+  HOANG_DAO = [
+    ["Hắc đạo", "⚡"],
+    ["Hoàng đạo", "🍀"],
+  ];
+
+  CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
+  CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+
   HOANG_DAO_TABLE = {
     1: ["Tý", "Sửu", "Tỵ", "Mùi"],
     2: ["Dần", "Mão", "Mùi", "Dậu"],
@@ -86,7 +92,7 @@ class Lunar_HoNgocDuc {
     "8-12": ["Phật Thích Ca thành đạo"],
   };
 
-  VEG_DAY = [1, 14, 15, 30];
+  VEG_DAY = [1, 15];
 
   constructor() {}
 
@@ -363,7 +369,7 @@ class Lunar_HoNgocDuc {
 
     const goodlist = this.HOANG_DAO_TABLE[lunarMonth] || [];
 
-    return goodlist.includes(chi) ? ["Hoàng đạo", "⭐"] : ["Hắc đạo", "❌"];
+    return goodlist.includes(chi) ? this.HOANG_DAO[1] : this.HOANG_DAO[0];
   }
 
   buddhaEvents(lunarDay, lunarMonth) {
@@ -557,7 +563,7 @@ class VnLunarCalendar extends HTMLElement {
         <div class="tags">
           <span>${lunar.solarTerm[1]} ${lunar.solarTerm[0]}</span>
           <span>${lunar.dayType[1]} ${lunar.dayType[0]}</span>
-          ${lunar.isVeg ? "<span>🥬 Chay</span>" : ""}
+          <!-- ${lunar.isVeg ? "<span>🥬 Chay</span>" : ""} -->
           ${lunar.lunarDay === 1 ? "<span>🌑 Mùng 1</span>" : ""}
           ${lunar.lunarDay === 15 ? "<span>🌕 Rằm</span>" : ""}
           ${lunar.events?.length ? `<span>🌸 ${lunar.events.join(", ")}</span>` : ""}

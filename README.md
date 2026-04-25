@@ -21,6 +21,7 @@
 
 <img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_day.gif" width="300" alt="VN Lunar Calendar - Day" />
 <img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_night.gif" width="300" alt="VN Lunar Calendar - Night" />
+<img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_night2.gif" width="300" alt="VN Lunar Calendar - Night 2" />
 
 ---
 
@@ -43,6 +44,14 @@ Xuất phát từ nhu cầu cá nhân trong việc tìm kiếm các ngày chay �
 
 Resource:
 https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_lunar_calendar.js
+
+- Đơn giản:
+
+```yaml
+- type: custom:vn-lunar-calendar
+```
+
+- Tùy chỉnh background:
 
 ```yaml
 - type: custom:vn-lunar-calendar
@@ -68,7 +77,23 @@ A Vietnamese lunar calendar designed for Home Assistant and web usage.
 
 ### 📦 Installation
 
+Resource:
 https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_lunar_calendar.js
+
+- Basic:
+
+```yaml
+- type: custom:vn-lunar-calendar
+```
+
+- Change background:
+
+```yaml
+- type: custom:vn-lunar-calendar
+  background_day: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
+  background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
+  background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
+```
 
 ---
 
