@@ -60,6 +60,20 @@ https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_l
   background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
 ```
 
+- Cập nhật entity:
+	- Home Assistant -> Helpers -> Create Helper:
+		- input_text:
+			- Name: _`your_input_text`_ (ex: vn_lunar_selected)
+			- Advanced settings -> Maximum length: `255`
+		- input_boolean
+			Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
+
+	```yaml
+	- type: custom:vn-lunar-calendar
+	  entity_selected_lunar: input_text.your_input_text
+	  entity_isveg: input_boolean.your_input_boolean
+	```
+
 ---
 
 ## 🇬🇧 English
@@ -95,6 +109,19 @@ https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_l
   background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
 ```
 
+- Update entity:
+	- Home Assistant -> Helpers -> Create Helper:
+		- input_text:
+			- Name: _`your_input_text`_ (ex: vn_lunar_selected)
+			- Advanced settings -> Maximum length: `255`
+		- input_boolean
+			Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
+
+	```yaml
+	- type: custom:vn-lunar-calendar
+	  entity_selected_lunar: input_text.your_input_text
+	  entity_isveg: input_boolean.your_input_boolean
+	```
 ---
 
 ## 👤 Author & Credits

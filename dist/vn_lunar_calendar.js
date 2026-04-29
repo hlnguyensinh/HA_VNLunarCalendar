@@ -470,10 +470,10 @@ class VnLunarCalendar extends HTMLElement {
 
     this.clsLunar = new Lunar_HoNgocDuc();
     this.clsLunarCache = new LunarCache();
-    this.clsLunarCache.preload([this.presentDate.getFullYear()]);
+
+    this.clsLunarCache.preload([this.presentDate.getFullYear(), this.presentDate.getFullYear() + 1]);
 
     this.isAnimating = false;
-
     this._initialized = false;
   }
 
@@ -484,13 +484,98 @@ class VnLunarCalendar extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
 
+    const oldDay = this.presentDate?.getDate();
+
+    this.presentDate = new Date();
+
+    const newDay = this.presentDate.getDate();
+
+    if (oldDay !== newDay) {
+      this.selectedDate = new Date();
+      this.calendarDate = new Date();
+
+      this._initialized = false;
+    }
+
     // ✅ chỉ render 1 lần
     if (!this._initialized) {
       this.render();
       this._initialized = true;
+      this.updateSelectedLunarEntity(this.selectedDate);
     }
 
     this.updateTheme();
+  }
+
+  async updateSelectedLunarEntity(date) {
+    const entityId_selected_lunar = this.config?.entity_selected_lunar;
+    const entityId_isveg = this.config?.entity_isveg;
+
+    if (!entityId_selected_lunar) return;
+    if (!this._hass) {
+      console.log("Not found hass");
+      return;
+    }
+
+    let lunar = this.clsLunarCache.get(date.getDate(), date.getMonth() + 1, date.getFullYear());
+
+    const payload = {
+      solar: {
+        day: date.getDate(),
+        month: date.getMonth() + 1,
+        year: date.getFullYear(),
+        weekday: date.toLocaleDateString("vi-VN", {
+          weekday: "long",
+        }),
+      },
+
+      lunar: {
+        day: lunar.lunarDay,
+        month: lunar.lunarMonth,
+        year: lunar.lunarYear,
+        leap: lunar.lunarLeap,
+
+        canchi: {
+          year: lunar.canchi.year,
+          month: lunar.canchi.month,
+          day: lunar.canchi.day,
+        },
+        /*
+        solar_term: {
+          name: lunar.solarTerm[0],
+          icon: lunar.solarTerm[1],
+        },
+        day_type: {
+          name: lunar.dayType[0],
+          icon: lunar.dayType[1],
+        },*/
+        is_veg: lunar.isVeg,
+        // events: lunar.events,
+      },
+    };
+
+    try {
+      if (entityId_selected_lunar) {
+        this._hass.callService("input_text", "set_value", {
+          entity_id: entityId_selected_lunar,
+          value: JSON.stringify(payload),
+        });
+      }
+      // console.log(JSON.stringify(payload).length);
+    } catch (err) {
+      console.error("VN Lunar Calendar update entity error:", err);
+    }
+
+    try {
+      if (entityId_isveg) {
+        this._hass.callService("input_boolean", lunar.isVeg ? "turn_on" : "turn_off", {
+          entity_id: entityId_isveg,
+        });
+      }
+      // console.log("entityId_isveg", lunar.isVeg ? "turn_on" : "turn_off");
+    } catch (err) {
+      console.error("VN Lunar Calendar update entity error:", err);
+    }
   }
 
   render() {
@@ -513,6 +598,7 @@ class VnLunarCalendar extends HTMLElement {
     `;
 
     const track = this.shadowRoot.querySelector(".calendar-track");
+
     if (track) {
       track.style.transition = "none";
       track.style.transform = "translateX(-100%)";
@@ -529,9 +615,72 @@ class VnLunarCalendar extends HTMLElement {
 
   updateTheme() {
     const style = this.shadowRoot.querySelector("style");
+
     if (!style) return;
 
     style.innerHTML = this.buildStyleCard(this.selectedDate);
+  }
+
+  updateDayDetail(date) {
+    const container = this.shadowRoot.querySelector(".daybox");
+
+    if (!container) return;
+
+    container.innerHTML = this.buildDayDetail(date);
+  }
+
+  bindCalendarDayClick() {
+    const wrapper = this.shadowRoot.querySelector(".calendar-wrapper");
+
+    wrapper.addEventListener("pointerup", (e) => {
+      if (this.justDragged) return;
+
+      // 🔥 dùng target từ pointerdown
+      const startEl = this._downTarget;
+
+      const cell = startEl?.closest?.(".cell");
+
+      if (!cell) return;
+
+      const dateStr = cell.dataset.date;
+
+      if (!dateStr) return;
+
+      const [y, m, d] = dateStr.split("-").map(Number);
+
+      const date = new Date(y, m - 1, d);
+
+      this.selectedDate = date;
+      this.updateDayDetail(date);
+      this.highlightSelected(cell);
+
+      this.updateSelectedLunarEntity(date);
+    });
+  }
+
+  highlightSelected(selectedCell) {
+    this.removeHighlightSelected();
+    selectedCell.classList.add("selected");
+  }
+
+  removeHighlightSelected() {
+    const cells = this.shadowRoot.querySelectorAll(".cell");
+    cells.forEach((c) => c.classList.remove("selected"));
+  }
+
+  bindDayBoxClick() {
+    const cell = this.shadowRoot.querySelector(".daybox");
+    cell.addEventListener("pointerup", (e) => {
+      this.calendarDate = this.presentDate;
+
+      this.selectedDate = this.presentDate;
+
+      this.removeHighlightSelected();
+
+      this.render();
+
+      this.updateSelectedLunarEntity(this.selectedDate);
+    });
   }
 
   buildDayDetail(date) {
@@ -787,60 +936,6 @@ class VnLunarCalendar extends HTMLElement {
     wrapper.addEventListener("pointercancel", handleEnd);
   }
 
-  updateDayDetail(date) {
-    const container = this.shadowRoot.querySelector(".daybox");
-    if (!container) return;
-
-    container.innerHTML = this.buildDayDetail(date);
-  }
-
-  bindCalendarDayClick() {
-    const wrapper = this.shadowRoot.querySelector(".calendar-wrapper");
-
-    wrapper.addEventListener("pointerup", (e) => {
-      if (this.justDragged) return;
-
-      // 🔥 dùng target từ pointerdown
-      const startEl = this._downTarget;
-
-      const cell = startEl?.closest?.(".cell");
-
-      if (!cell) return;
-
-      const dateStr = cell.dataset.date;
-      if (!dateStr) return;
-
-      const [y, m, d] = dateStr.split("-").map(Number);
-      const date = new Date(y, m - 1, d);
-
-      this.selectedDate = date;
-      this.updateDayDetail(date);
-      this.highlightSelected(cell);
-    });
-  }
-
-  highlightSelected(selectedCell) {
-    this.removeHighlightSelected();
-    selectedCell.classList.add("selected");
-  }
-
-  removeHighlightSelected() {
-    const cells = this.shadowRoot.querySelectorAll(".cell");
-    cells.forEach((c) => c.classList.remove("selected"));
-  }
-
-  bindDayBoxClick() {
-    const cell = this.shadowRoot.querySelector(".daybox");
-    cell.addEventListener("pointerup", (e) => {
-      this.calendarDate = this.presentDate;
-      this.selectedDate = this.presentDate;
-      // this.updateDayDetail(this.selectedDate);
-      this.removeHighlightSelected();
-      // this.buildCalendar(this.calendarDate);
-      this.render();
-    });
-  }
-
   getStyle(date) {
     const bg_day =
       this.config?.background_day ||
@@ -998,8 +1093,8 @@ class VnLunarCalendar extends HTMLElement {
           background-size: cover;
           background-repeat: no-repeat;
 		  
-		  border: 1px solid rgba(255,255,255,0.3);
-		  border-radius: 10px;
+          border: 1px solid rgba(255,255,255,0.3);
+          border-radius: 10px;
           
           ${st.background_attb}
         }
@@ -1011,7 +1106,7 @@ class VnLunarCalendar extends HTMLElement {
           justify-content: space-evenly;
           height:10rem;
 		  
-		  border-radius: 10px 10px 0 0;
+		      border-radius: 10px 10px 0 0;
 
           /*
           border: 1px solid rgba(255,255,255,0.3);
@@ -1053,10 +1148,11 @@ class VnLunarCalendar extends HTMLElement {
         /* --------- calendarbox -------- */
         .vn-lunar-card .calendarbox {
           border-radius: 0 0 10px 10px;
-		  /*
-		  border: 1px solid rgba(255,255,255,0.3);
+
+          /*
+          border: 1px solid rgba(255,255,255,0.3);
           box-shadow: 0 8px 32px rgba(31,95,139,0.15);
-		  */
+          */
 
           ${st.calendarbox}
         }
