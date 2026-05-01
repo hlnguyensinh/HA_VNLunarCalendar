@@ -1,6 +1,6 @@
 {
-    "name": "ha-vn-lunar-calendar",
-    "version": "0.0.1",
+    "name": "vn-lunar-calendar",
+    "version": "1.0.0",
     "description": "Vietnamese Lunar Calendar for Home Assistant",
     "main": "dist/vn_lunar_calendar.js",
     "scripts": {
