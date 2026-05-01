@@ -42,42 +42,44 @@ Xuất phát từ nhu cầu cá nhân trong việc tìm kiếm các ngày chay �
 
 ### 📦 Cài đặt
 
-Resource:
-https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_lunar_calendar.js
+- HACS -> Custom repositories
+  - Repository: `https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_lunar_calendar.js`
+  - Type: `Dashboard`
 
 - Đơn giản:
 
-```yaml
-- type: custom:vn-lunar-calendar
-```
+  ```yaml
+  - type: custom:vn-lunar-calendar
+  ```
 
 - Tùy chỉnh background:
 
-```yaml
-- type: custom:vn-lunar-calendar
-  background_day: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
-  background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
-  background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
-```
+  ```yaml
+  - type: custom:vn-lunar-calendar
+    background_day: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
+    background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
+    background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
+  ```
 
 - Cập nhật entity:
-	- Home Assistant -> Helpers -> Create Helper:
-		- input_text:
-			- Name: _`your_input_text`_ (ex: vn_lunar_selected)
-			- Advanced settings -> Maximum length: `255`
-		- input_boolean
-			- Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
-		- input_boolean
-			- Name: _`your_input_boolean2`_ (ex: vn_lunar_connected)
+  - Home Assistant -> Helpers -> Create Helper:
+    - input_text:
+      - Name: _`your_input_text`_ (ex: vn_lunar_selected)
+      - Advanced settings -> Maximum length: `255`
+    - input_boolean
+      - Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
+    - input_boolean
+      - Name: _`your_input_boolean2`_ (ex: vn_lunar_connected)
 
-	```yaml
-	- type: custom:vn-lunar-calendar
-	  entity_selected_lunar: input_text.vn_lunar_selected
-	  entity_isveg: input_boolean.vn_lunar_veg
-	  entity_component: input_boolean.vn_lunar_connected
-	```
+  ```yaml
+  - type: custom:vn-lunar-calendar
+    entity_selected_lunar: input_text.vn_lunar_selected
+    entity_isveg: input_boolean.vn_lunar_veg
+    entity_component: input_boolean.vn_lunar_connected
+  ```
 
 ### 📦 Integration:
+
 - Tự động kết nối VN Lunar Calendar Component nếu HA đã cài sẵn component: https://github.com/hlnguyensinh/HA_VNCalendarComponent
 
 ---
@@ -97,51 +99,51 @@ A Vietnamese lunar calendar designed for Home Assistant and web usage.
 
 ### 📦 Installation
 
-Resource:
-https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_lunar_calendar.js
+- HACS -> Custom repositories
+  - Repository: `https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_lunar_calendar.js`
+  - Type: `Dashboard`
 
 - Basic:
 
-```yaml
-- type: custom:vn-lunar-calendar
-```
+  ```yaml
+  - type: custom:vn-lunar-calendar
+  ```
 
 - Change background:
 
-```yaml
-- type: custom:vn-lunar-calendar
-  background_day: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
-  background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
-  background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
-```
+  ```yaml
+  - type: custom:vn-lunar-calendar
+    background_day: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
+    background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
+    background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
+  ```
 
 - Update entity:
-	- Home Assistant -> Helpers -> Create Helper:
-		- input_text:
-			- Name: _`your_input_text`_ (ex: vn_lunar_selected)
-			- Advanced settings -> Maximum length: `255`
-		- input_boolean
-			- Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
-		- input_boolean
-			- Name: _`your_input_boolean2`_ (ex: vn_lunar_connected)
+  - Home Assistant -> Helpers -> Create Helper:
+    - input_text:
+      - Name: _`your_input_text`_ (ex: vn_lunar_selected)
+      - Advanced settings -> Maximum length: `255`
+    - input_boolean
+      - Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
+    - input_boolean
+      - Name: _`your_input_boolean2`_ (ex: vn_lunar_connected)
 
-	```yaml
-	- type: custom:vn-lunar-calendar
-	  entity_selected_lunar: input_text.vn_lunar_selected
-	  entity_isveg: input_boolean.vn_lunar_veg
-	  entity_component: input_boolean.vn_lunar_connected
-	```
-	
+  ```yaml
+  - type: custom:vn-lunar-calendar
+    entity_selected_lunar: input_text.vn_lunar_selected
+    entity_isveg: input_boolean.vn_lunar_veg
+    entity_component: input_boolean.vn_lunar_connected
+  ```
 
 ### 📦 Integration:
+
 - Auto connect VN Lunar Calendar Component: https://github.com/hlnguyensinh/HA_VNCalendarComponent
 
 ---
 
 ## 👤 Author & Credits
 
-- Lunar calculation algorithm based on work by **Hồ Ngọc Đức**  
-  https://github.com/vanng822/amlich
+- [Lunar calculation algorithm based on work by **Hồ Ngọc Đức**](https://github.com/vanng822/amlich)
 
 - Developer: **Nguyen Sinh**
 - AI Support: ChatGPT (OpenAI)
