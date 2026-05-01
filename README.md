@@ -66,13 +66,19 @@ https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_l
 			- Name: _`your_input_text`_ (ex: vn_lunar_selected)
 			- Advanced settings -> Maximum length: `255`
 		- input_boolean
-			Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
+			- Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
+		- input_boolean
+			- Name: _`your_input_boolean2`_ (ex: vn_lunar_connected)
 
 	```yaml
 	- type: custom:vn-lunar-calendar
-	  entity_selected_lunar: input_text.your_input_text
-	  entity_isveg: input_boolean.your_input_boolean
+	  entity_selected_lunar: input_text.vn_lunar_selected
+	  entity_isveg: input_boolean.vn_lunar_veg
+	  entity_component: input_boolean.vn_lunar_connected
 	```
+
+### 📦 Integration:
+- Tự động kết nối VN Lunar Calendar Component nếu HA đã cài sẵn component: https://github.com/hlnguyensinh/HA_VNCalendarComponent
 
 ---
 
@@ -115,13 +121,21 @@ https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_l
 			- Name: _`your_input_text`_ (ex: vn_lunar_selected)
 			- Advanced settings -> Maximum length: `255`
 		- input_boolean
-			Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
+			- Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
+		- input_boolean
+			- Name: _`your_input_boolean2`_ (ex: vn_lunar_connected)
 
 	```yaml
 	- type: custom:vn-lunar-calendar
-	  entity_selected_lunar: input_text.your_input_text
-	  entity_isveg: input_boolean.your_input_boolean
+	  entity_selected_lunar: input_text.vn_lunar_selected
+	  entity_isveg: input_boolean.vn_lunar_veg
+	  entity_component: input_boolean.vn_lunar_connected
 	```
+	
+
+### 📦 Integration:
+- Auto connect VN Lunar Calendar Component: https://github.com/hlnguyensinh/HA_VNCalendarComponent
+
 ---
 
 ## 👤 Author & Credits

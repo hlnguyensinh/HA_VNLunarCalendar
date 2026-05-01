@@ -1,3 +1,192 @@
+// ======================= COMMON =======================
+const TIME_ZONE = 7;
+//const VERSION = "0.0.48";
+
+// console.log(`VN Lunar Calendar version: ${VERSION}`);
+// ======================= VNCalendarComponent =======================
+const DOMAIN = "vn_calendar_component";
+const SERVICE_TODAY = "today";
+const SERVICE_GET_DAY = "get_day";
+const SERVICE_GET_MONTH = "get_month";
+const SERVICE_GET_YEAR = "get_year";
+
+class VNCalendarComponent {
+  constructor(hass) {
+    this._hass = hass;
+  }
+
+  async get_today() {
+    const result = await this._hass.callService(DOMAIN, SERVICE_TODAY, {}, {}, true, true);
+
+    return result.response;
+  }
+
+  async get_day(dd, mm, yy) {
+    const result = await this._hass.callService(
+      DOMAIN,
+      SERVICE_GET_DAY,
+      {
+        day: dd,
+        month: mm,
+        year: yy,
+      },
+      {},
+      true,
+      true,
+    );
+
+    return result.response;
+  }
+
+  async get_month(mm, yy) {
+    const result = await this._hass.callService(
+      DOMAIN,
+      SERVICE_GET_MONTH,
+      {
+        month: mm,
+        year: yy,
+      },
+      {},
+      true,
+      true,
+    );
+
+    return result.response;
+  }
+
+  async get_year(yy) {
+    const result = await this._hass.callService(
+      DOMAIN,
+      SERVICE_GET_YEAR,
+      {
+        year: yy,
+      },
+      {},
+      true,
+      true,
+    );
+
+    return result.response;
+  }
+}
+
+// ======================= VNCalendarComponentCache =======================
+
+class VNCalendarComponentCache {
+  constructor(hass, timeZone = TIME_ZONE) {
+    this.timeZone = timeZone;
+    this._hass = hass;
+
+    this.cache = new Map();
+    this.loadingYears = new Map();
+
+    this.clsLunar = new VNCalendarComponent(this._hass);
+  }
+
+  // build full year cache
+  async buildYear(year) {
+    year = Number(year);
+
+    if (this.cache.has(year)) {
+      return this.cache.get(year);
+    }
+
+    if (this.loadingYears.has(year)) {
+      return await this.loadingYears.get(year);
+    }
+
+    const promise = this.clsLunar.get_year(year);
+
+    this.loadingYears.set(year, promise);
+
+    const yearMap = await promise;
+
+    this.cache.set(year, yearMap);
+
+    this.loadingYears.delete(year);
+
+    this.cleanup(year);
+
+    return yearMap;
+  }
+
+  // get cached date
+  async getDay(dd, mm, yy) {
+    let yearMap = this.cache.get(yy);
+
+    if (!yearMap) {
+      yearMap = await this.buildYear(yy);
+    }
+
+    const key_month = `${yy}-${String(mm).padStart(2, "0")}`;
+
+    const key_day = `${yy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+
+    return yearMap?.[key_month]?.[key_day];
+  }
+
+  async getMonth(mm, yy) {
+    let yearMap = this.cache.get(yy);
+
+    if (!yearMap) {
+      yearMap = await this.buildYear(yy);
+    }
+
+    const key_month = `${yy}-${String(mm).padStart(2, "0")}`;
+
+    return yearMap?.[key_month] || {};
+  }
+
+  async getYear(yy) {
+    let yearMap = this.cache.get(yy);
+
+    if (!yearMap) {
+      yearMap = await this.buildYear(yy);
+    }
+
+    return yearMap;
+  }
+
+  async getToday() {
+    return await this.clsLunar.get_today();
+  }
+
+  preload(years = []) {
+    years.forEach((y) => this.buildYear(y));
+  }
+
+  clear(year) {
+    this.cache.delete(year);
+  }
+
+  clearAll() {
+    this.cache.clear();
+  }
+
+  cleanup(viewingyear) {
+    const trigger = 6;
+
+    const lenCached = this.cache.size;
+
+    if (lenCached <= trigger) {
+      return;
+    }
+
+    const nowYear = new Date().getFullYear();
+
+    viewingyear = Number(viewingyear);
+    viewingyear = viewingyear > 1900 ? viewingyear : nowYear;
+
+    const keepYears = new Set([nowYear - 1, nowYear, nowYear + 1, viewingyear - 1, viewingyear, viewingyear + 1]);
+
+    for (const year of this.cache.keys()) {
+      if (!keepYears.has(Number(year))) {
+        this.clear(year);
+      }
+    }
+  }
+}
+
 // ======================= LUNAR [HO NGOC DUC] =======================
 
 class Lunar_HoNgocDuc {
@@ -279,23 +468,31 @@ class Lunar_HoNgocDuc {
 
     // return new Array(lunarDay, lunarMonth, lunarYear, lunarLeap);
     return {
-      day: dd,
-      month: mm,
-      yyyy: yy,
-      timeZone: timeZone,
-      lunarDay: lunarDay,
-      lunarMonth: lunarMonth,
-      lunarYear: lunarYear,
-      lunarLeap: lunarLeap ? true : false,
-      canchi: {
-        year: this.canChiYear(lunarYear),
-        month: this.canChiMonth(lunarYear, lunarMonth),
-        day: this.canChiDay(dayNumber),
+      solar: {
+        day: dd,
+        month: mm,
+        year: yy,
       },
+
+      lunar: {
+        day: lunarDay,
+        month: lunarMonth,
+        year: lunarYear,
+        leap: lunarLeap ? true : false,
+
+        canchi: {
+          year: this.canChiYear(lunarYear),
+          month: this.canChiMonth(lunarYear, lunarMonth),
+          day: this.canChiDay(dayNumber),
+        },
+
+        events: this.buddhaEvents(lunarDay, lunarMonth),
+      },
+
+      timeZone: timeZone,
       solarTerm: this.solarTerm(dayNumber, timeZone),
       dayType: this.dayType(lunarMonth, this.canChiDay(dayNumber)),
       isVeg: this.isVegDay(lunarDay),
-      events: this.buddhaEvents(lunarDay, lunarMonth),
     };
   }
 
@@ -383,8 +580,6 @@ class Lunar_HoNgocDuc {
 
 // ======================= LUNARCACHE =======================
 
-const TIME_ZONE = 7;
-
 class LunarCache {
   constructor(timeZone = TIME_ZONE) {
     this.timeZone = timeZone;
@@ -395,7 +590,9 @@ class LunarCache {
 
   // build full year cache
   buildYear(year) {
-    const map = new Map();
+    year = Number(year);
+
+    const yearMap = {};
 
     const start = new Date(year, 0, 1);
     const end = new Date(year, 11, 31);
@@ -407,26 +604,67 @@ class LunarCache {
 
       const lunar = this.clsLunar.convertSolar2Lunar(dd, mm, yy, this.timeZone);
 
-      const key = `${yy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+      const key_month = `${yy}-${String(mm).padStart(2, "0")}`;
 
-      map.set(key, lunar);
+      const key_day = `${yy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+
+      if (!yearMap[key_month]) {
+        yearMap[key_month] = {};
+      }
+
+      yearMap[key_month][key_day] = lunar;
     }
 
-    this.cache.set(year, map);
-    return map;
+    this.cache.set(year, yearMap);
+
+    this.cleanup(year);
+
+    return yearMap;
   }
 
   // get cached date
-  get(dd, mm, yy) {
+  getDay(dd, mm, yy) {
+    let yearMap = this.cache.get(yy);
+
+    if (!yearMap) {
+      yearMap = this.buildYear(yy);
+    }
+    const key_month = `${yy}-${String(mm).padStart(2, "0")}`;
+
+    const key_day = `${yy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+
+    return yearMap?.[key_month]?.[key_day];
+  }
+
+  // get full month
+  getMonth(mm, yy) {
     let yearMap = this.cache.get(yy);
 
     if (!yearMap) {
       yearMap = this.buildYear(yy);
     }
 
-    const key = `${yy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+    const key_month = `${yy}-${String(mm).padStart(2, "0")}`;
 
-    return yearMap.get(key);
+    return yearMap?.[key_month] || {};
+  }
+
+  // get full year
+  getYear(yy) {
+    let yearMap = this.cache.get(yy);
+
+    if (!yearMap) {
+      yearMap = this.buildYear(yy);
+    }
+
+    return yearMap;
+  }
+
+  // today
+  getToday() {
+    const d = new Date();
+
+    return getDay(d.getDate(), d.getMonth() + 1, d.getFullYear());
   }
 
   // preload multiple years
@@ -440,6 +678,29 @@ class LunarCache {
 
   clearAll() {
     this.cache.clear();
+  }
+
+  cleanup(viewingyear) {
+    const trigger = 6;
+
+    const lenCached = this.cache.size;
+
+    if (lenCached <= trigger) {
+      return;
+    }
+
+    const nowYear = new Date().getFullYear();
+
+    viewingyear = Number(viewingyear);
+    viewingyear = viewingyear > 1900 ? viewingyear : nowYear;
+
+    const keepYears = new Set([nowYear - 1, nowYear, nowYear + 1, viewingyear - 1, viewingyear, viewingyear + 1]);
+
+    for (const year of this.cache.keys()) {
+      if (!keepYears.has(Number(year))) {
+        this.clear(year);
+      }
+    }
   }
 }
 
@@ -459,22 +720,18 @@ class LunarCache {
 //   day_1630: "🌘",
 // };
 
-class VnLunarCalendar extends HTMLElement {
+class VNLunarCalendar extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: "open" }); // ✅ dùng shadow DOM
+    this.attachShadow({ mode: "open" });
 
     this.presentDate = new Date();
     this.selectedDate = new Date();
     this.calendarDate = new Date();
 
-    this.clsLunar = new Lunar_HoNgocDuc();
-    this.clsLunarCache = new LunarCache();
-
-    this.clsLunarCache.preload([this.presentDate.getFullYear(), this.presentDate.getFullYear() + 1]);
-
     this.isAnimating = false;
     this._initialized = false;
+    this._initializing = false;
   }
 
   setConfig(config) {
@@ -484,9 +741,89 @@ class VnLunarCalendar extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
 
+    // this.hasService  = hass.config?.components.includes(DOMAIN) || false;
+    this.hasService = hass.services?.[DOMAIN]?.[SERVICE_TODAY] || false;
+    this.hasService = this.hasService ? true : false;
+
+    if (this.hasService) {
+      if (!this.clsLunar) {
+        this.clsLunarCache = new VNCalendarComponentCache(hass);
+      }
+    } else {
+      if (!this.clsLunarCache) {
+        this.clsLunarCache = new LunarCache();
+      }
+    }
+
+    this.handleHass();
+  }
+
+  async handleHass() {
+    if (this._initializing) {
+      return;
+    }
+
+    if (!this._initialized) {
+      this._initializing = true;
+
+      await this.initializeCard();
+
+      this._initialized = true;
+      this._initializing = false;
+
+      return;
+    }
+
+    const newDay = await this.isNewDay();
+
+    if (newDay) {
+      this._initializing = true;
+
+      await this.initializeCard();
+
+      this._initializing = false;
+    }
+  }
+
+  async initializeCard() {
+    await this.init();
+
+    this.render();
+
+    this._initialized = true;
+  }
+
+  async init() {
+    if (this.hasService) {
+      const today = await this.clsLunarCache.getToday();
+
+      this.presentDate = new Date(today.solar.year, today.solar.month - 1, today.solar.day);
+      this.selectedDate = new Date(today.solar.year, today.solar.month - 1, today.solar.day);
+      this.calendarDate = new Date(today.solar.year, today.solar.month - 1, today.solar.day);
+
+      this.clsLunarCache.preload([today.solar.year - 1, today.solar.year, today.solar.year + 1]);
+    } else {
+      this.presentDate = new Date();
+      this.selectedDate = new Date();
+      this.calendarDate = new Date();
+
+      this.clsLunarCache.preload([
+        this.presentDate.getFullYear() - 1,
+        this.presentDate.getFullYear(),
+        this.presentDate.getFullYear() + 1,
+      ]);
+    }
+  }
+
+  async isNewDay() {
     const oldDay = this.presentDate?.getDate();
 
-    this.presentDate = new Date();
+    if (this.hasService) {
+      const today = await this.clsLunarCache.getToday();
+      this.presentDate = new Date(today.solar.year, today.solar.month - 1, today.solar.day);
+    } else {
+      this.presentDate = new Date();
+    }
 
     const newDay = this.presentDate.getDate();
 
@@ -494,108 +831,40 @@ class VnLunarCalendar extends HTMLElement {
       this.selectedDate = new Date();
       this.calendarDate = new Date();
 
-      this._initialized = false;
+      return true;
     }
 
-    // ✅ chỉ render 1 lần
-    if (!this._initialized) {
-      this.render();
-      this._initialized = true;
-      this.updateSelectedLunarEntity(this.selectedDate);
-    }
-
-    this.updateTheme();
+    return false;
   }
 
-  async updateSelectedLunarEntity(date) {
-    const entityId_selected_lunar = this.config?.entity_selected_lunar;
-    const entityId_isveg = this.config?.entity_isveg;
+  async handleRender() {
+    let [buildDay, buildCalendar, buildStyle] = await Promise.all([
+      this.buildDayDetail(this.selectedDate),
+      this.buildCalendar(this.calendarDate),
+      this.buildStyleCard(this.presentDate),
+    ]);
 
-    if (!entityId_selected_lunar) return;
-    if (!this._hass) {
-      console.log("Not found hass");
-      return;
-    }
-
-    let lunar = this.clsLunarCache.get(date.getDate(), date.getMonth() + 1, date.getFullYear());
-
-    const payload = {
-      solar: {
-        day: date.getDate(),
-        month: date.getMonth() + 1,
-        year: date.getFullYear(),
-        weekday: date.toLocaleDateString("vi-VN", {
-          weekday: "long",
-        }),
-      },
-
-      lunar: {
-        day: lunar.lunarDay,
-        month: lunar.lunarMonth,
-        year: lunar.lunarYear,
-        leap: lunar.lunarLeap,
-
-        canchi: {
-          year: lunar.canchi.year,
-          month: lunar.canchi.month,
-          day: lunar.canchi.day,
-        },
-        /*
-        solar_term: {
-          name: lunar.solarTerm[0],
-          icon: lunar.solarTerm[1],
-        },
-        day_type: {
-          name: lunar.dayType[0],
-          icon: lunar.dayType[1],
-        },*/
-        is_veg: lunar.isVeg,
-        // events: lunar.events,
-      },
-    };
-
-    try {
-      if (entityId_selected_lunar) {
-        this._hass.callService("input_text", "set_value", {
-          entity_id: entityId_selected_lunar,
-          value: JSON.stringify(payload),
-        });
-      }
-      // console.log(JSON.stringify(payload).length);
-    } catch (err) {
-      console.error("VN Lunar Calendar update entity error:", err);
-    }
-
-    try {
-      if (entityId_isveg) {
-        this._hass.callService("input_boolean", lunar.isVeg ? "turn_on" : "turn_off", {
-          entity_id: entityId_isveg,
-        });
-      }
-      // console.log("entityId_isveg", lunar.isVeg ? "turn_on" : "turn_off");
-    } catch (err) {
-      console.error("VN Lunar Calendar update entity error:", err);
-    }
-  }
-
-  render() {
     this.shadowRoot.innerHTML = `
       <ha-card>
         <div class="vn-lunar-card">
           <div class="daybox">
-            ${this.buildDayDetail(this.selectedDate)}
+            ${buildDay}
           </div>
 
           <div class="calendarbox">
-            ${this.buildCalendar(this.calendarDate)}
+            ${buildCalendar}
           </div>
         </div>
 
         <style>
-          ${this.buildStyleCard(this.presentDate)}
+          ${buildStyle}
         </style>
       </ha-card>
     `;
+  }
+
+  async render() {
+    await this.handleRender();
 
     const track = this.shadowRoot.querySelector(".calendar-track");
 
@@ -604,38 +873,37 @@ class VnLunarCalendar extends HTMLElement {
       track.style.transform = "translateX(-100%)";
     }
 
-    // bind events
     this.shadowRoot.querySelector(".prev").onclick = () => this.changeMonth(-1);
     this.shadowRoot.querySelector(".next").onclick = () => this.changeMonth(1);
 
     this.initSwipe();
     this.bindCalendarDayClick();
     this.bindDayBoxClick();
-  }
 
-  updateTheme() {
+    this.updateSelectedLunarEntity(this.selectedDate);
+  }
+  async updateTheme() {
     const style = this.shadowRoot.querySelector("style");
 
     if (!style) return;
 
-    style.innerHTML = this.buildStyleCard(this.selectedDate);
+    style.innerHTML = await this.buildStyleCard(this.selectedDate);
   }
 
-  updateDayDetail(date) {
+  async updateDayDetail(date) {
     const container = this.shadowRoot.querySelector(".daybox");
 
     if (!container) return;
 
-    container.innerHTML = this.buildDayDetail(date);
+    container.innerHTML = await this.buildDayDetail(date);
   }
 
-  bindCalendarDayClick() {
+  async bindCalendarDayClick() {
     const wrapper = this.shadowRoot.querySelector(".calendar-wrapper");
 
-    wrapper.addEventListener("pointerup", (e) => {
+    wrapper.addEventListener("pointerup", async (e) => {
       if (this.justDragged) return;
 
-      // 🔥 dùng target từ pointerdown
       const startEl = this._downTarget;
 
       const cell = startEl?.closest?.(".cell");
@@ -670,6 +938,7 @@ class VnLunarCalendar extends HTMLElement {
 
   bindDayBoxClick() {
     const cell = this.shadowRoot.querySelector(".daybox");
+
     cell.addEventListener("pointerup", (e) => {
       this.calendarDate = this.presentDate;
 
@@ -678,13 +947,11 @@ class VnLunarCalendar extends HTMLElement {
       this.removeHighlightSelected();
 
       this.render();
-
-      this.updateSelectedLunarEntity(this.selectedDate);
     });
   }
 
-  buildDayDetail(date) {
-    const lunar = this.clsLunarCache.get(date.getDate(), date.getMonth() + 1, date.getFullYear());
+  async buildDayDetail(date) {
+    const dayinfo = await this.clsLunarCache.getDay(date.getDate(), date.getMonth() + 1, date.getFullYear());
 
     let html = `
       <div class="dayinfo">
@@ -693,36 +960,36 @@ class VnLunarCalendar extends HTMLElement {
           ${date.toLocaleDateString("vi-VN")}
         </div>
 
-        <div class="lunar  ${lunar.isVeg ? "vegday" : ""}">
-          ${lunar.lunarDay}/${lunar.lunarMonth}
-          ${lunar.lunarLeap ? "(nhuận)" : ""}
-          - ${lunar.canchi.year}
+        <div class="lunar  ${dayinfo.isVeg ? "vegday" : ""}">
+          ${dayinfo.lunar.day}/${dayinfo.lunar.month}
+          ${dayinfo.lunar.leap ? "(nhuận)" : ""}
+          - ${dayinfo.lunar.canchi.year}
         </div>
 
         <div class="daycanchi">
-          Ngày: ${lunar.canchi.day}
+          Ngày: ${dayinfo.lunar.canchi.day}
         </div>
         
         <div class="monthcanchi">
-          Tháng: ${lunar.canchi.month}
+          Tháng: ${dayinfo.lunar.canchi.month}
         </div>
       </div>
 
       <div class="dayextra">
         <div class="tags">
-          <span>${lunar.solarTerm[1]} ${lunar.solarTerm[0]}</span>
-          <span>${lunar.dayType[1]} ${lunar.dayType[0]}</span>
-          <!-- ${lunar.isVeg ? "<span>🥬 Chay</span>" : ""} -->
-          ${lunar.lunarDay === 1 ? "<span>🌑 Mùng 1</span>" : ""}
-          ${lunar.lunarDay === 15 ? "<span>🌕 Rằm</span>" : ""}
-          ${lunar.events?.length ? `<span>🌸 ${lunar.events.join(", ")}</span>` : ""}
+          <span>${dayinfo.solarTerm[1]} ${dayinfo.solarTerm[0]}</span>
+          <span>${dayinfo.dayType[1]} ${dayinfo.dayType[0]}</span>
+          <!-- ${dayinfo.isVeg ? "<span>🥬 Chay</span>" : ""} -->
+          ${dayinfo.lunar.day === 1 ? "<span>🌑 Mùng 1</span>" : ""}
+          ${dayinfo.lunar.day === 15 ? "<span>🌕 Rằm</span>" : ""}
+          ${dayinfo.lunar.events?.length ? `<span>🌸 ${dayinfo.lunar.events.join(", ")}</span>` : ""}
         </div>
       </div>
     `;
     return html;
   }
 
-  changeMonth(step) {
+  async changeMonth(step) {
     if (this.isAnimating) {
       return;
     }
@@ -735,21 +1002,22 @@ class VnLunarCalendar extends HTMLElement {
     track.style.transition = "transform 0.3s cubic-bezier(.34,1.56,.64,1)"; //transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
     track.style.transform = step > 0 ? "translateX(-200%)" : "translateX(0%)";
 
-    const onEnd = () => {
+    const onEnd = async () => {
       track.removeEventListener("transitionend", onEnd);
 
-      // update month
       const d = new Date(this.calendarDate);
       d.setMonth(d.getMonth() + step);
+
       this.calendarDate = d;
 
-      // render lại
-      this.render();
+      await this.render();
 
-      // reset vị trí ngay lập tức (no animation)
       const newTrack = this.shadowRoot.querySelector(".calendar-track");
-      newTrack.style.transition = "none";
-      newTrack.style.transform = "translateX(-100%)";
+
+      if (newTrack) {
+        newTrack.style.transition = "none";
+        newTrack.style.transform = "translateX(-100%)";
+      }
 
       this.isAnimating = false;
     };
@@ -757,7 +1025,7 @@ class VnLunarCalendar extends HTMLElement {
     track.addEventListener("transitionend", onEnd);
   }
 
-  buildMonthCalendar(date, extraClass = "") {
+  buildMonthCalendar(date, monthData, extraClass = "") {
     const year = date.getFullYear();
     const month = date.getMonth();
 
@@ -790,9 +1058,16 @@ class VnLunarCalendar extends HTMLElement {
 
       const isCurrentMonth = m === month;
 
-      const lunar = this.clsLunarCache.get(d, m + 1, y);
-      const isVeg = lunar.isVeg;
-      const hasEvent = lunar.events.length;
+      const key = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+      const dayinfo = monthData[key];
+
+      if (!dayinfo) {
+        continue;
+      }
+
+      const isVeg = dayinfo.isVeg;
+      const hasEvent = dayinfo.lunar.events?.length;
 
       const isToday = d === today.getDate() && m === today.getMonth() && y === today.getFullYear();
 
@@ -808,7 +1083,7 @@ class VnLunarCalendar extends HTMLElement {
           </div>
 
           <div class="lunar-day">
-            ${lunar.lunarDay === 1 ? `<span class="first-daymonth">1/${lunar.lunarMonth}</span>` : lunar.lunarDay}
+            ${dayinfo.lunar.day === 1 ? `<span class="first-daymonth">1/${dayinfo.lunar.month}</span>` : dayinfo.lunar.day}
           </div>
 
           ${isVeg ? `<div class="dot veg"></div>` : ""}
@@ -816,40 +1091,69 @@ class VnLunarCalendar extends HTMLElement {
         </div>
       `;
     }
+
     html += `</div>`;
+
     return html;
   }
 
-  renderCalendars(date) {
+  async renderCalendars(date) {
     const prev = new Date(date);
-    prev.setMonth(prev.getMonth() - 1);
+    prev.setMonth(prev.getMonth() - 1, 1);
+
+    const prevprev = new Date(date);
+    prevprev.setMonth(prev.getMonth() - 1, 1);
 
     const next = new Date(date);
-    next.setMonth(next.getMonth() + 1);
+    next.setMonth(next.getMonth() + 1, 1);
+
+    const nextnext = new Date(date);
+    nextnext.setMonth(next.getMonth() + 1, 1);
+
+    const [prevprevMonthData, prevMonthData, currentMonthData, nextMonthData, nextnextMonthData] = await Promise.all([
+      this.clsLunarCache.getMonth(prevprev.getMonth() + 1, prevprev.getFullYear()),
+      this.clsLunarCache.getMonth(prev.getMonth() + 1, prev.getFullYear()),
+      this.clsLunarCache.getMonth(date.getMonth() + 1, date.getFullYear()),
+      this.clsLunarCache.getMonth(next.getMonth() + 1, next.getFullYear()),
+      this.clsLunarCache.getMonth(nextnext.getMonth() + 1, nextnext.getFullYear()),
+    ]);
+
+    const mergedData = {
+      ...prevprevMonthData,
+      ...prevMonthData,
+      ...currentMonthData,
+      ...nextMonthData,
+      ...nextnextMonthData,
+    };
+    let buildPrevMonth = this.buildMonthCalendar(prev, mergedData, "prev");
+    let buildCurrMonth = this.buildMonthCalendar(date, mergedData, "current");
+    let buildNextMonth = this.buildMonthCalendar(next, mergedData, "next");
 
     return `
       <div class="calendar-track">
-        ${this.buildMonthCalendar(prev, "prev")}
-        ${this.buildMonthCalendar(date, "current")}
-        ${this.buildMonthCalendar(next, "next")}
+        ${buildPrevMonth}
+        ${buildCurrMonth}
+        ${buildNextMonth}
       </div>
     `;
   }
 
-  buildCalendar(date) {
-    let html = `
-          <div class="calendar-nav">
-            <button class="prev">◀ Tháng trước</button>
-            <div class="month">
-              ${date.getMonth() + 1}/${date.getFullYear()}
-            </div>
-            <button class="next">Tháng sau ▶</button>
-          </div>
+  async buildCalendar(date) {
+    let renderCalendars = await this.renderCalendars(date);
 
-          <div class="calendar-wrapper">
-            ${this.renderCalendars(date)}
-          </div>
-        `;
+    let html = `
+      <div class="calendar-nav">
+        <button class="prev">◀ Tháng trước</button>
+        <div class="month">
+            ${date.getMonth() + 1}/${date.getFullYear()}
+        </div>
+        <button class="next">Tháng sau ▶</button>
+      </div>
+
+      <div class="calendar-wrapper">
+        ${renderCalendars}
+      </div>
+    `;
     return html;
   }
 
@@ -871,7 +1175,7 @@ class VnLunarCalendar extends HTMLElement {
     wrapper.style.touchAction = "pan-y";
 
     // ================= DOWN =================
-    wrapper.addEventListener("pointerdown", (e) => {
+    wrapper.addEventListener("pointerdown", async (e) => {
       if (this.isAnimating) return;
 
       wrapper.setPointerCapture(e.pointerId);
@@ -882,14 +1186,13 @@ class VnLunarCalendar extends HTMLElement {
       startX = e.clientX;
       currentX = startX;
 
-      // 🔥 LƯU TARGET GỐC
       this._downTarget = e.target;
 
       track.style.transition = "none";
     });
 
     // ================= MOVE =================
-    wrapper.addEventListener("pointermove", (e) => {
+    wrapper.addEventListener("pointermove", async (e) => {
       if (!this.isDragging) return;
 
       currentX = e.clientX;
@@ -936,7 +1239,60 @@ class VnLunarCalendar extends HTMLElement {
     wrapper.addEventListener("pointercancel", handleEnd);
   }
 
-  getStyle(date) {
+  async updateSelectedLunarEntity(date) {
+    const entity_selected_lunar = this.config?.entity_selected_lunar;
+    const entity_isveg = this.config?.entity_isveg;
+    const entity_component = this.config?.entity_component;
+
+    if (!this._hass) {
+      return;
+    }
+
+    const dayinfo = await this.clsLunarCache.getDay(date.getDate(), date.getMonth() + 1, date.getFullYear());
+
+    const payload = {
+      solar: dayinfo.solar,
+      lunar: {
+        day: dayinfo.lunar.day,
+        month: dayinfo.lunar.month,
+        year: dayinfo.lunar.year,
+        canchi: dayinfo.lunar.canchi,
+      },
+    };
+
+    try {
+      if (entity_selected_lunar) {
+        this._hass.callService("input_text", "set_value", {
+          entity_id: entity_selected_lunar,
+          value: JSON.stringify(payload),
+        });
+      }
+    } catch (err) {
+      console.error("VN Lunar Calendar selected lunar error:", err);
+    }
+
+    try {
+      if (entity_isveg) {
+        this._hass.callService("input_boolean", dayinfo.isVeg ? "turn_on" : "turn_off", {
+          entity_id: entity_isveg,
+        });
+      }
+    } catch (err) {
+      console.error("VN Lunar Calendar veg error:", err);
+    }
+
+    try {
+      if (entity_component) {
+        this._hass.callService("input_boolean", this.hasService ? "turn_on" : "turn_off", {
+          entity_id: entity_component,
+        });
+      }
+    } catch (err) {
+      console.error("VN Lunar Calendar component error:", err);
+    }
+  }
+
+  async getStyle() {
     const bg_day =
       this.config?.background_day ||
       "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg";
@@ -956,9 +1312,9 @@ class VnLunarCalendar extends HTMLElement {
       isNight = hour >= 18 || hour < 6;
     }
 
-    const lunar = this.clsLunarCache.get(now.getDate(), now.getMonth() + 1, now.getFullYear());
+    const dayinfo = await this.clsLunarCache.getDay(now.getDate(), now.getMonth() + 1, now.getFullYear());
 
-    let style = isNight ? "night" + (lunar.day == 15 ? "-15" : "") : "";
+    let style = isNight ? "night" + (dayinfo.lunar.day == 15 ? "-15" : "") : "";
 
     switch (style) {
       case "night-15":
@@ -1081,8 +1437,8 @@ class VnLunarCalendar extends HTMLElement {
     }
   }
 
-  buildStyleCard(date) {
-    let st = this.getStyle(date);
+  async buildStyleCard() {
+    let st = await this.getStyle();
 
     let html = `
         .vn-lunar-card {
@@ -1274,10 +1630,13 @@ class VnLunarCalendar extends HTMLElement {
   }
 }
 
-customElements.define("vn-lunar-calendar", VnLunarCalendar);
-/** YAML
- * type: custom:vn-lunar-calendar
- * background_day: /local/widget/vn_lunar_calendar/assets/whiteflower.jpg
- * background_night: /local/widget/vn_lunar_calendar/assets/night_fullmoon1.jpg
- * background_nighthalf: '/local/widget/vn_lunar_calendar/assets/night_halfmoon.jpg';
- */
+if (!customElements.get("vn-lunar-calendar")) {
+  customElements.define("vn-lunar-calendar", VNLunarCalendar);
+}
+
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "vn-lunar-calendar",
+  name: "VN Lunar Calendar",
+  description: "Vietnam Lunar Calendar supported Component",
+});
