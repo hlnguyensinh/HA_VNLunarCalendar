@@ -1,6 +1,6 @@
 // ======================= COMMON =======================
 const TIME_ZONE = 7;
-//const VERSION = "0.0.48";
+//const VERSION = "1.1.0";
 
 // console.log(`VN Lunar Calendar version: ${VERSION}`);
 // ======================= VNCalendarComponent =======================
@@ -81,6 +81,7 @@ class VNCalendarComponentCache {
     this.loadingYears = new Map();
 
     this.clsLunar = new VNCalendarComponent(this._hass);
+    this.thoithancache = this.clsLunar.getThoiThan();
   }
 
   // build full year cache
@@ -111,7 +112,7 @@ class VNCalendarComponentCache {
   }
 
   // get cached date
-  async getDay(dd, mm, yy) {
+  async get(dd, mm, yy) {
     let yearMap = this.cache.get(yy);
 
     if (!yearMap) {
@@ -185,14 +186,56 @@ class VNCalendarComponentCache {
       }
     }
   }
+
+  getCurrentHourChi() {
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    for (const [chi, range] of Object.entries(this.thoithancache)) {
+      const [start, end] = range.split("-");
+
+      let [sh, sm] = start.split(":").map(Number);
+      let [eh, em] = end.split(":").map(Number);
+
+      let startMinutes = sh * 60 + sm;
+      let endMinutes = eh * 60 + em;
+
+      if (endMinutes < startMinutes) {
+        if (currentMinutes >= startMinutes || currentMinutes < endMinutes) {
+          return chi;
+        }
+      } else {
+        if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
+          return chi;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  isCurrentGoodHour(goodhours) {
+    const currentChi = this.getCurrentHourChi();
+
+    return goodhours.some((item) => item.name === currentChi);
+  }
+
+  getCurrentHourInfo(dayinfo) {
+    const hour = this.getCurrentHourChi();
+
+    return {
+      goodhours: dayinfo.goodHours,
+      hour: hour,
+      range: this.thoithancache[hour],
+      isgoodhour: this.isCurrentGoodHour(dayinfo.goodHours),
+    };
+  }
 }
 
 // ======================= LUNAR [HO NGOC DUC] =======================
 
 class Lunar_HoNgocDuc {
   /*
-   * Modified by Webpro. Thank to @author HO NGOC DUC.
-   *
    * -----------------------------------------------------------------------------------
    * Copyright (c) 2006 Ho Ngoc Duc. All Rights Reserved.
    * Astronomical algorithms from the book "Astronomical Algorithms" by Jean Meeus, 1998
@@ -202,86 +245,6 @@ class Lunar_HoNgocDuc {
    * this copyright notice and appropriate documentation appears in all copies.
    * -----------------------------------------------------------------------------------
    */
-
-  SOLAR_TERM_EMOJI = [
-    // 🌸 Xuân
-    ["Xuân phân", "🌸"],
-    ["Thanh minh", "🌿"],
-    ["Cốc vũ", "🌧️"],
-
-    // ☀️ Hạ
-    ["Lập hạ", "🌱"],
-    ["Tiểu mãn", "🌾"],
-    ["Mang chủng", "🌾"],
-    ["Hạ chí", "☀️"],
-    ["Tiểu thử", "🌤️"],
-    ["Đại thử", "🔥"],
-
-    // 🍂 Thu
-    ["Lập thu", "🍃"],
-    ["Xử thử", "🌬️"],
-    ["Bạch lộ", "💧"],
-    ["Thu phân", "🍂"],
-    ["Hàn lộ", "❄️"],
-    ["Sương giáng", "🌫️"],
-
-    // ❄️ Đông
-    ["Lập đông", "🌨️"],
-    ["Tiểu tuyết", "❄️"],
-    ["Đại tuyết", "☃️"],
-    ["Đông chí", "🌙"],
-    ["Tiểu hàn", "🥶"],
-    ["Đại hàn", "🧊"],
-
-    // 🌱 Cuối đông → xuân
-    ["Lập xuân", "🌱"],
-    ["Vũ thủy", "🌧️"],
-    ["Kinh trập", "⚡"],
-  ];
-
-  HOANG_DAO = [
-    ["Hắc đạo", "⚡"],
-    ["Hoàng đạo", "🍀"],
-  ];
-
-  CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
-  CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
-
-  HOANG_DAO_TABLE = {
-    1: ["Tý", "Sửu", "Tỵ", "Mùi"],
-    2: ["Dần", "Mão", "Mùi", "Dậu"],
-    3: ["Thìn", "Tỵ", "Dậu", "Hợi"],
-    4: ["Ngọ", "Mùi", "Hợi", "Sửu"],
-    5: ["Thân", "Dậu", "Sửu", "Mão"],
-    6: ["Tuất", "Hợi", "Mão", "Tỵ"],
-    7: ["Tý", "Sửu", "Tỵ", "Mùi"],
-    8: ["Dần", "Mão", "Mùi", "Dậu"],
-    9: ["Thìn", "Tỵ", "Dậu", "Hợi"],
-    10: ["Ngọ", "Mùi", "Hợi", "Sửu"],
-    11: ["Thân", "Dậu", "Sửu", "Mão"],
-    12: ["Tuất", "Hợi", "Mão", "Tỵ"],
-  };
-
-  BUDDHA_EVENTS = {
-    "1-1": ["Di Lặc Bồ Tát"],
-    "8-2": ["Phật Thích Ca xuất gia"],
-    "15-2": ["Phật Thích Ca nhập Niết Bàn"],
-    "19-2": ["Quan Âm đản sinh"],
-    "21-2": ["Phổ Hiền Bồ Tát"],
-    "16-3": ["Phật Thích Ca đản sinh (Nam tông)"],
-    "4-4": ["Văn Thù Bồ Tát"],
-    "8-4": ["Phật Thích Ca đản sinh (Bắc tông)"],
-    "15-4": ["Phật Thích Ca thành đạo"],
-    "13-6": ["Quan Âm thành đạo"],
-    "15-7": ["Vu Lan (Ullambana)"],
-    "19-6": ["Quan Âm thành đạo"],
-    "30-7": ["Địa Tạng Vương Bồ Tát"],
-    "22-9": ["Dược Sư Phật"],
-    "19-9": ["Quan Âm xuất gia"],
-    "8-12": ["Phật Thích Ca thành đạo"],
-  };
-
-  VEG_DAY = [1, 15];
 
   constructor() {}
 
@@ -466,34 +429,7 @@ class Lunar_HoNgocDuc {
       lunarYear -= 1;
     }
 
-    // return new Array(lunarDay, lunarMonth, lunarYear, lunarLeap);
-    return {
-      solar: {
-        day: dd,
-        month: mm,
-        year: yy,
-      },
-
-      lunar: {
-        day: lunarDay,
-        month: lunarMonth,
-        year: lunarYear,
-        leap: lunarLeap ? true : false,
-
-        canchi: {
-          year: this.canChiYear(lunarYear),
-          month: this.canChiMonth(lunarYear, lunarMonth),
-          day: this.canChiDay(dayNumber),
-        },
-
-        events: this.buddhaEvents(lunarDay, lunarMonth),
-      },
-
-      timeZone: timeZone,
-      solarTerm: this.solarTerm(dayNumber, timeZone),
-      dayType: this.dayType(lunarMonth, this.canChiDay(dayNumber)),
-      isVeg: this.isVegDay(lunarDay),
-    };
+    return new Array(lunarDay, lunarMonth, lunarYear, lunarLeap);
   }
 
   /* Convert a lunar date to the corresponding solar date */
@@ -526,6 +462,124 @@ class Lunar_HoNgocDuc {
     monthStart = this.getNewMoonDay(k + off, timeZone);
     return this.jdToDate(monthStart + lunarDay - 1);
   }
+}
+
+// ======================= LUNAREXTRA =======================
+
+class LunarExtra {
+  SOLAR_TERM_EMOJI = [
+    // 🌸 Xuân
+    ["Xuân phân", "🌸"],
+    ["Thanh minh", "🌿"],
+    ["Cốc vũ", "🌧️"],
+
+    // ☀️ Hạ
+    ["Lập hạ", "🌱"],
+    ["Tiểu mãn", "🌾"],
+    ["Mang chủng", "🌾"],
+    ["Hạ chí", "☀️"],
+    ["Tiểu thử", "🌤️"],
+    ["Đại thử", "🔥"],
+
+    // 🍂 Thu
+    ["Lập thu", "🍃"],
+    ["Xử thử", "🌬️"],
+    ["Bạch lộ", "💧"],
+    ["Thu phân", "🍂"],
+    ["Hàn lộ", "❄️"],
+    ["Sương giáng", "🌫️"],
+
+    // ❄️ Đông
+    ["Lập đông", "🌨️"],
+    ["Tiểu tuyết", "❄️"],
+    ["Đại tuyết", "☃️"],
+    ["Đông chí", "🌙"],
+    ["Tiểu hàn", "🥶"],
+    ["Đại hàn", "🧊"],
+
+    // 🌱 Cuối đông → xuân
+    ["Lập xuân", "🌱"],
+    ["Vũ thủy", "🌧️"],
+    ["Kinh trập", "⚡"],
+  ];
+
+  HOANG_DAO = [
+    ["Hắc đạo", "⚡"],
+    ["Hoàng đạo", "🍀"],
+  ];
+
+  CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
+  CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+
+  HOANG_DAO_TABLE = {
+    1: ["Tý", "Sửu", "Tỵ", "Mùi"],
+    2: ["Dần", "Mão", "Mùi", "Dậu"],
+    3: ["Thìn", "Tỵ", "Dậu", "Hợi"],
+    4: ["Ngọ", "Mùi", "Hợi", "Sửu"],
+    5: ["Thân", "Dậu", "Sửu", "Mão"],
+    6: ["Tuất", "Hợi", "Mão", "Tỵ"],
+    7: ["Tý", "Sửu", "Tỵ", "Mùi"],
+    8: ["Dần", "Mão", "Mùi", "Dậu"],
+    9: ["Thìn", "Tỵ", "Dậu", "Hợi"],
+    10: ["Ngọ", "Mùi", "Hợi", "Sửu"],
+    11: ["Thân", "Dậu", "Sửu", "Mão"],
+    12: ["Tuất", "Hợi", "Mão", "Tỵ"],
+  };
+
+  BUDDHA_EVENTS = {
+    "1-1": ["Di Lặc Bồ Tát"],
+    "8-2": ["Phật Thích Ca xuất gia"],
+    "15-2": ["Phật Thích Ca nhập Niết Bàn"],
+    "19-2": ["Quan Âm đản sinh"],
+    "21-2": ["Phổ Hiền Bồ Tát"],
+    "16-3": ["Phật Thích Ca đản sinh (Nam tông)"],
+    "4-4": ["Văn Thù Bồ Tát"],
+    "8-4": ["Phật Thích Ca đản sinh (Bắc tông)"],
+    "15-4": ["Phật Thích Ca thành đạo"],
+    "13-6": ["Quan Âm thành đạo"],
+    "15-7": ["Vu Lan (Ullambana)"],
+    "19-6": ["Quan Âm thành đạo"],
+    "30-7": ["Địa Tạng Vương Bồ Tát"],
+    "22-9": ["Dược Sư Phật"],
+    "19-9": ["Quan Âm xuất gia"],
+    "8-12": ["Phật Thích Ca thành đạo"],
+  };
+
+  VEG_DAY = [1, 15];
+
+  THOI_THAN_TABLE = {
+    Tý: "23:00-01:00",
+    Sửu: "01:00-03:00",
+    Dần: "03:00-05:00",
+    Mão: "05:00-07:00",
+    Thìn: "07:00-09:00",
+    Tỵ: "09:00-11:00",
+    Ngọ: "11:00-13:00",
+    Mùi: "13:00-15:00",
+    Thân: "15:00-17:00",
+    Dậu: "17:00-19:00",
+    Tuất: "19:00-21:00",
+    Hợi: "21:00-23:00",
+  };
+
+  HOANG_DAO_HOUR_TABLE = {
+    Tý: ["Tý", "Sửu", "Mão", "Ngọ", "Thân", "Dậu"],
+    Sửu: ["Dần", "Mão", "Tỵ", "Thân", "Tuất", "Hợi"],
+    Dần: ["Tý", "Sửu", "Thìn", "Tỵ", "Mùi", "Tuất"],
+    Mão: ["Dần", "Mão", "Ngọ", "Mùi", "Dậu", "Tý"],
+    Thìn: ["Thìn", "Tỵ", "Thân", "Dậu", "Hợi", "Dần"],
+    Tỵ: ["Ngọ", "Mùi", "Tuất", "Hợi", "Sửu", "Thìn"],
+    Ngọ: ["Tý", "Sửu", "Mão", "Ngọ", "Thân", "Dậu"],
+    Mùi: ["Dần", "Mão", "Tỵ", "Thân", "Tuất", "Hợi"],
+    Thân: ["Tý", "Sửu", "Thìn", "Tỵ", "Mùi", "Tuất"],
+    Dậu: ["Dần", "Mão", "Ngọ", "Mùi", "Dậu", "Tý"],
+    Tuất: ["Thìn", "Tỵ", "Thân", "Dậu", "Hợi", "Dần"],
+    Hợi: ["Ngọ", "Mùi", "Tuất", "Hợi", "Sửu", "Thìn"],
+  };
+
+  constructor() {
+    this.clsLunar_HoNgocDuc = new Lunar_HoNgocDuc();
+  }
 
   canChiYear(lunarYear) {
     return this.CAN[(lunarYear + 6) % 10] + " " + this.CHI[(lunarYear + 8) % 12];
@@ -544,20 +598,20 @@ class Lunar_HoNgocDuc {
   }
 
   canChiDayFromSolar(dd, mm, yy) {
-    const jd = this.jdFromDate(dd, mm, yy);
+    const jd = this.clsLunar_HoNgocDuc.jdFromDate(dd, mm, yy);
     return this.canChiDay(jd);
   }
 
   solarTerm(jd, timeZone) {
-    const L = this.SunLongitude(jd - 0.5 - timeZone / 24);
-    const degree = (L * 180) / this.PI;
+    const L = this.clsLunar_HoNgocDuc.SunLongitude(jd - 0.5 - timeZone / 24);
+    const degree = (L * 180) / this.clsLunar_HoNgocDuc.PI;
 
-    const index = this.INT(degree / 15); // mỗi 15°
+    const index = this.clsLunar_HoNgocDuc.INT(degree / 15); // mỗi 15°
     return this.SOLAR_TERM_EMOJI[index];
   }
 
   solarTermFromSolar(dd, mm, yy, timeZone) {
-    const jd = this.jdFromDate(dd, mm, yy);
+    const jd = this.clsLunar_HoNgocDuc.jdFromDate(dd, mm, yy);
     return solarTerm(jd, timeZone);
   }
 
@@ -569,14 +623,78 @@ class Lunar_HoNgocDuc {
     return goodlist.includes(chi) ? this.HOANG_DAO[1] : this.HOANG_DAO[0];
   }
 
+  isVegDay(lunarDay) {
+    return this.VEG_DAY.includes(lunarDay);
+  }
+
   buddhaEvents(lunarDay, lunarMonth) {
     return this.BUDDHA_EVENTS[`${Number(lunarDay)}-${Number(lunarMonth)}`] || [];
   }
 
-  isVegDay(lunarDay) {
-    return this.VEG_DAY.includes(lunarDay);
+  getThoiThan() {
+    return this.THOI_THAN_TABLE;
+  }
+
+  goodHours(dayCanChi) {
+    const chi = dayCanChi?.split(" ")?.[1];
+
+    if (!chi) {
+      return [];
+    }
+
+    const goodhours_table = this.HOANG_DAO_HOUR_TABLE[chi] || [];
+
+    return goodhours_table.map((hour) => ({
+      name: hour,
+      time: this.THOI_THAN_TABLE[hour],
+    }));
+  }
+
+  getLunarDay(dd, mm, yy, timeZone) {
+    const dayinfo = this.clsLunar_HoNgocDuc.convertSolar2Lunar(dd, mm, yy, timeZone);
+    const dayNumber = this.clsLunar_HoNgocDuc.jdFromDate(dd, mm, yy);
+
+    const lunarDay = dayinfo[0];
+    const lunarMonth = dayinfo[1];
+    const lunarYear = dayinfo[2];
+    const lunarLeap = dayinfo[3];
+
+    return {
+      solar: {
+        day: dd,
+        month: mm,
+        year: yy,
+      },
+
+      lunar: {
+        day: lunarDay,
+        month: lunarMonth,
+        year: lunarYear,
+        leap: lunarLeap ? true : false,
+
+        canchi: {
+          year: this.canChiYear(lunarYear),
+          month: this.canChiMonth(lunarYear, lunarMonth),
+          day: this.canChiDay(dayNumber),
+        },
+
+        events: this.buddhaEvents(lunarDay, lunarMonth),
+      },
+
+      timeZone: timeZone,
+      solarTerm: this.solarTerm(dayNumber, timeZone),
+      dayType: this.dayType(lunarMonth, this.canChiDay(dayNumber)),
+      isVeg: this.isVegDay(lunarDay),
+      goodHours: this.goodHours(this.canChiDay(dayNumber)),
+    };
   }
 }
+
+// now = new Date();
+// lunarExtra = new LunarExtra();
+
+// testdate = lunarExtra.getLunarDay(now.getDate(), now.getMonth() + 1, now.getFullYear());
+// console.log(testdate);
 
 // ======================= LUNARCACHE =======================
 
@@ -585,7 +703,8 @@ class LunarCache {
     this.timeZone = timeZone;
     this.cache = new Map(); // year -> Map(date -> lunar)
 
-    this.clsLunar = new Lunar_HoNgocDuc();
+    this.clsLunar = new LunarExtra();
+    this.thoithancache = this.clsLunar.getThoiThan();
   }
 
   // build full year cache
@@ -602,7 +721,7 @@ class LunarCache {
       const mm = d.getMonth() + 1;
       const yy = d.getFullYear();
 
-      const lunar = this.clsLunar.convertSolar2Lunar(dd, mm, yy, this.timeZone);
+      const lunar = this.clsLunar.getLunarDay(dd, mm, yy, this.timeZone);
 
       const key_month = `${yy}-${String(mm).padStart(2, "0")}`;
 
@@ -623,7 +742,7 @@ class LunarCache {
   }
 
   // get cached date
-  getDay(dd, mm, yy) {
+  get(dd, mm, yy) {
     let yearMap = this.cache.get(yy);
 
     if (!yearMap) {
@@ -664,7 +783,7 @@ class LunarCache {
   getToday() {
     const d = new Date();
 
-    return getDay(d.getDate(), d.getMonth() + 1, d.getFullYear());
+    return get(d.getDate(), d.getMonth() + 1, d.getFullYear());
   }
 
   // preload multiple years
@@ -702,7 +821,59 @@ class LunarCache {
       }
     }
   }
+
+  getCurrentHourChi() {
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    for (const [chi, range] of Object.entries(this.thoithancache)) {
+      const [start, end] = range.split("-");
+
+      let [sh, sm] = start.split(":").map(Number);
+      let [eh, em] = end.split(":").map(Number);
+
+      let startMinutes = sh * 60 + sm;
+      let endMinutes = eh * 60 + em;
+
+      if (endMinutes < startMinutes) {
+        if (currentMinutes >= startMinutes || currentMinutes < endMinutes) {
+          return chi;
+        }
+      } else {
+        if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
+          return chi;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  isCurrentGoodHour(goodhours) {
+    const currentChi = this.getCurrentHourChi();
+
+    return goodhours.some((item) => item.name === currentChi);
+  }
+
+  getCurrentHourInfo(dayinfo) {
+    const hour = this.getCurrentHourChi();
+
+    return {
+      goodhours: dayinfo.goodHours,
+      hour: hour,
+      range: this.thoithancache[hour],
+      isgoodhour: this.isCurrentGoodHour(dayinfo.goodHours),
+    };
+  }
 }
+
+// now = new Date();
+// lunarCache = new LunarCache();
+
+// testdate = lunarCache.get(now.getDate(), now.getMonth() + 1, now.getFullYear());
+// console.log(testdate);
+// console.log(lunarCache.isCurrentGoodHour(testdate.goodHours));
+// console.log(lunarCache.getCurrentHourInfo(testdate));
 
 // ======================= VN LUNAR CALENDAR =======================
 // const EMOJI = {
@@ -901,7 +1072,15 @@ class VNLunarCalendar extends HTMLElement {
   async bindCalendarDayClick() {
     const wrapper = this.shadowRoot.querySelector(".calendar-wrapper");
 
+    if (this.isReadonly()) {
+      return;
+    }
+
     wrapper.addEventListener("pointerup", async (e) => {
+      if (this.isReadonly()) {
+        return;
+      }
+
       if (this.justDragged) return;
 
       const startEl = this._downTarget;
@@ -951,7 +1130,16 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async buildDayDetail(date) {
-    const dayinfo = await this.clsLunarCache.getDay(date.getDate(), date.getMonth() + 1, date.getFullYear());
+    const dayinfo = await this.clsLunarCache.get(date.getDate(), date.getMonth() + 1, date.getFullYear());
+    const hourinfo = this.clsLunarCache.getCurrentHourInfo(dayinfo);
+
+    const specified_hidden = false;
+    const solarterm_hidden = false;
+
+    const isveg_hidden = this.isHideIsVeg();
+    const event_hidden = this.isHideEvent();
+    const goodhour_hidden = this.isHideGoodHour();
+    const goodday_hidden = this.isHideGoodDay();
 
     let html = `
       <div class="dayinfo">
@@ -960,7 +1148,7 @@ class VNLunarCalendar extends HTMLElement {
           ${date.toLocaleDateString("vi-VN")}
         </div>
 
-        <div class="lunar  ${dayinfo.isVeg ? "vegday" : ""}">
+        <div class="lunar ${dayinfo.isVeg ? "vegday" : ""}">
           ${dayinfo.lunar.day}/${dayinfo.lunar.month}
           ${dayinfo.lunar.leap ? "(nhuận)" : ""}
           - ${dayinfo.lunar.canchi.year}
@@ -977,12 +1165,13 @@ class VNLunarCalendar extends HTMLElement {
 
       <div class="dayextra">
         <div class="tags">
-          <span>${dayinfo.solarTerm[1]} ${dayinfo.solarTerm[0]}</span>
-          <span>${dayinfo.dayType[1]} ${dayinfo.dayType[0]}</span>
-          <!-- ${dayinfo.isVeg ? "<span>🥬 Chay</span>" : ""} -->
-          ${dayinfo.lunar.day === 1 ? "<span>🌑 Mùng 1</span>" : ""}
-          ${dayinfo.lunar.day === 15 ? "<span>🌕 Rằm</span>" : ""}
-          ${dayinfo.lunar.events?.length ? `<span>🌸 ${dayinfo.lunar.events.join(", ")}</span>` : ""}
+          <span class="${solarterm_hidden ? "hidden" : ""}">${dayinfo.solarTerm[1]} ${dayinfo.solarTerm[0]}</span>
+          <span class="${goodday_hidden ? "hidden" : ""}">${dayinfo.dayType[1]} ${dayinfo.dayType[0]}</span>
+          ${dayinfo.isVeg ? `<span class="${isveg_hidden ? "hidden" : ""}">🥬 Chay</span>` : ""}
+          ${dayinfo.lunar.day === 1 && !specified_hidden ? "<span>🌑 Mùng 1</span>" : ""}${dayinfo.lunar.day === 15 && !specified_hidden ? "<span>🌕 Rằm</span>" : ""}
+          ${dayinfo.lunar.events?.length ? `<span class="${event_hidden ? "hidden" : ""}">🌸 ${dayinfo.lunar.events.join(", ")}</span>` : ""}
+          <span class="${goodhour_hidden ? "hidden" : ""}">${hourinfo.isgoodhour ? "🟢 Hoàng đạo" : "⚡ Hắc đạo"} - Giờ ${hourinfo.hour}</span>
+          
         </div>
       </div>
     `;
@@ -1088,6 +1277,7 @@ class VNLunarCalendar extends HTMLElement {
 
           ${isVeg ? `<div class="dot veg"></div>` : ""}
           ${hasEvent ? `<div class="dot event"></div>` : ""}
+          
         </div>
       `;
     }
@@ -1141,6 +1331,8 @@ class VNLunarCalendar extends HTMLElement {
   async buildCalendar(date) {
     let renderCalendars = await this.renderCalendars(date);
 
+    const readonlyClass = this.isReadonly() ? "readonly" : "";
+
     let html = `
       <div class="calendar-nav">
         <button class="prev">◀ Tháng trước</button>
@@ -1150,7 +1342,7 @@ class VNLunarCalendar extends HTMLElement {
         <button class="next">Tháng sau ▶</button>
       </div>
 
-      <div class="calendar-wrapper">
+      <div class="calendar-wrapper ${readonlyClass}">
         ${renderCalendars}
       </div>
     `;
@@ -1241,14 +1433,14 @@ class VNLunarCalendar extends HTMLElement {
 
   async updateSelectedLunarEntity(date) {
     const entity_selected_lunar = this.config?.entity_selected_lunar;
-    const entity_isveg = this.config?.entity_isveg;
+    const entity_selected_isveg = this.config?.entity_selected_isveg;
     const entity_component = this.config?.entity_component;
 
     if (!this._hass) {
       return;
     }
 
-    const dayinfo = await this.clsLunarCache.getDay(date.getDate(), date.getMonth() + 1, date.getFullYear());
+    const dayinfo = await this.clsLunarCache.get(date.getDate(), date.getMonth() + 1, date.getFullYear());
 
     const payload = {
       solar: dayinfo.solar,
@@ -1272,13 +1464,13 @@ class VNLunarCalendar extends HTMLElement {
     }
 
     try {
-      if (entity_isveg) {
+      if (entity_selected_isveg) {
         this._hass.callService("input_boolean", dayinfo.isVeg ? "turn_on" : "turn_off", {
-          entity_id: entity_isveg,
+          entity_id: entity_selected_isveg,
         });
       }
     } catch (err) {
-      console.error("VN Lunar Calendar veg error:", err);
+      console.error("VN Lunar Calendar selected isveg error:", err);
     }
 
     try {
@@ -1304,6 +1496,7 @@ class VNLunarCalendar extends HTMLElement {
       "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg";
 
     const now = this.presentDate;
+
     let isNight = false;
     try {
       isNight = this._hass?.states["sun.sun"]?.state === "below_horizon";
@@ -1312,9 +1505,12 @@ class VNLunarCalendar extends HTMLElement {
       isNight = hour >= 18 || hour < 6;
     }
 
-    const dayinfo = await this.clsLunarCache.getDay(now.getDate(), now.getMonth() + 1, now.getFullYear());
+    const dayinfo = await this.clsLunarCache.get(now.getDate(), now.getMonth() + 1, now.getFullYear());
 
     let style = isNight ? "night" + (dayinfo.lunar.day == 15 ? "-15" : "") : "";
+
+    const nobg = this.isNoBg();
+    if (nobg) style = "no_background";
 
     switch (style) {
       case "night-15":
@@ -1329,12 +1525,12 @@ class VNLunarCalendar extends HTMLElement {
           daybox_daycanchi: "color: #A8C7FF",
           daybox_monthcanchi: "color: #A8C7FF",
 
-          daybox_dayextra_tags: "background: rgb(63, 127, 166,.5); color: #E6F0FF",
+          daybox_dayextra_tags: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
 
           calendarbox:
             "background: rgba(20,40,70,0.45); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
+          calendarbox_nav: "background: rgba(111,163,197,0.15);",
           calendarbox_nav_month: "color: #E6F0FF",
-          calendarbox_nav_background: "background: rgba(111,163,197,0.15);",
           calendarbox_nav_button: "color: #a7b7ff",
 
           calendarbox_header: "background: linear-gradient(135deg, #3F7FA6, #6FA3C5); color: #fff;",
@@ -1368,12 +1564,12 @@ class VNLunarCalendar extends HTMLElement {
           daybox_daycanchi: "color: #A8C7FF",
           daybox_monthcanchi: "color: #A8C7FF",
 
-          daybox_dayextra_tags: "background: rgb(63, 127, 166,.5); color: #E6F0FF",
+          daybox_dayextra_tags: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
 
           calendarbox:
             "background: rgba(20,40,70,0.45); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
+          calendarbox_nav: "background: rgba(111,163,197,0.15);",
           calendarbox_nav_month: "color: #E6F0FF",
-          calendarbox_nav_background: "background: rgba(111,163,197,0.15);",
           calendarbox_nav_button: "color: #a7b7ff",
 
           calendarbox_header: "background: linear-gradient(135deg, #3F7FA6, #6FA3C5); color: #fff;",
@@ -1395,24 +1591,61 @@ class VNLunarCalendar extends HTMLElement {
           calendarbox_firstmonth_solar: "text-decoration: underline;",
           calendarbox_firstmonth_lunar: "text-decoration: underline;",
         };
+      case "no_background":
+        return {
+          background: "",
+          background_attb: "",
+
+          daybox: "",
+          daybox_solar: "font-size:1.2em;",
+          daybox_lunar: "font-size:1.5em; font-weight: bold",
+          daybox_vegday: "color: orange",
+          daybox_daycanchi: "",
+          daybox_monthcanchi: "",
+
+          daybox_dayextra_tags: "background: rgba(99, 159, 237, 0.1);",
+
+          calendarbox: "",
+          calendarbox_nav: "opacity:0.9; background: rgba(99, 159, 237, 0.1);",
+          calendarbox_nav_month: "",
+          calendarbox_nav_button: "",
+
+          calendarbox_header: "background: rgb(99, 159, 237); color: #FFFFFF",
+          calendarbox_header_sunday: "color: #f5ad42",
+          calendarbox_cell: "border: 1.5px solid rgba(99, 159, 237,0.1); background: rgba(99, 159, 237,0.1);",
+          calendarbox_cell_hover: "background: rgba(99,159,237,0.2);",
+
+          calendarbox_solarday: "text-align: center;",
+          calendarbox_lunarday: "font-size: .8rem; text-align: center;",
+          calendarbox_sunday: "color: #f5ad42",
+          calendarbox_today: "background: rgba(99, 159, 237, .6);",
+          calendarbox_selected: "border: 1.5px solid rgba(99,159,237,0.6);",
+
+          calendarbox_dotveg: "background: orange;",
+          calendarbox_dotevent: "background: purple",
+          calendarbox_othermonth_solar: "color: rgba(99, 159, 237, .3);",
+          calendarbox_othermonth_lunar: "color: rgba(99, 159, 237, .3);",
+          calendarbox_firstmonth_solar: "text-decoration: underline;",
+          calendarbox_firstmonth_lunar: "text-decoration: underline;",
+        };
       default:
         return {
-          background: `background: url('${bg_day}'), linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.15))`,
-          background_attb: "background-attachment: fixed;",
+          background: `background: url('${bg_day}') /*, linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.15))*/`,
+          background_attb: "/*background-attachment: fixed;*/",
 
-          daybox: "background: rgba(255,255,255,0.5); backdrop-filter: blur(8px);",
+          daybox: "/*background: rgba(255,255,255,0.8); backdrop-filter: blur(8px);*/",
           daybox_solar: "font-size:1.2em; color: #3F7FA6",
-          daybox_lunar: "font-size:1.5em; color: #1F5F8B",
+          daybox_lunar: "font-size:1.5em; color: #1F5F8B; font-weight: bold",
           daybox_vegday: "color: orange",
           daybox_daycanchi: "color: #1F5F8B",
           daybox_monthcanchi: "color: #1F5F8B",
 
-          daybox_dayextra_tags: "background: #1F5F8B; color: #ccc",
+          daybox_dayextra_tags: "background: rgba(130, 163, 185, 0.5); color: #ffffff",
 
           calendarbox:
             "background: rgba(255,255,255,0.5); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
+          calendarbox_nav: "background: rgba(111,163,197,0.15);",
           calendarbox_nav_month: "color: #1F5F8B",
-          calendarbox_nav_background: "background: rgba(111,163,197,0.15);",
           calendarbox_nav_button: " color: #5B7C99",
 
           calendarbox_header: "background: linear-gradient(135deg, #3F7FA6, #6FA3C5); color: #fff;",
@@ -1449,8 +1682,8 @@ class VNLunarCalendar extends HTMLElement {
           background-size: cover;
           background-repeat: no-repeat;
 		  
-          border: 1px solid rgba(255,255,255,0.3);
-          border-radius: 10px;
+          /*border: 1px solid rgba(255,255,255,0.3);*/
+          border-radius: 15px;
           
           ${st.background_attb}
         }
@@ -1462,9 +1695,10 @@ class VNLunarCalendar extends HTMLElement {
           justify-content: space-evenly;
           height:10rem;
 		  
+          /*
 		      border-radius: 10px 10px 0 0;
 
-          /*
+          
           border: 1px solid rgba(255,255,255,0.3);
           box-shadow: 0 8px 32px rgba(31,95,139,0.15);
           */
@@ -1475,6 +1709,7 @@ class VNLunarCalendar extends HTMLElement {
         }
 
         .vn-lunar-card .daybox .dayinfo {
+          min-width: 14rem;
           text-align:center;
         }
 
@@ -1485,11 +1720,7 @@ class VNLunarCalendar extends HTMLElement {
         .vn-lunar-card .daybox .dayinfo .monthcanchi {${st.daybox_monthcanchi}}
         
         .vn-lunar-card .daybox .dayextra {
-          max-width: 50%;
           text-align:center;
-        }
-          
-        .vn-lunar-card .daybox .dayextra .tags {
         }
 
         .vn-lunar-card .daybox .dayextra .tags span {
@@ -1499,6 +1730,10 @@ class VNLunarCalendar extends HTMLElement {
           border-radius: 6px;
 
           ${st.daybox_dayextra_tags}
+        }
+          
+        .vn-lunar-card .daybox .dayextra .tags span.hidden {
+          display: none;
         }
 
         /* --------- calendarbox -------- */
@@ -1520,7 +1755,7 @@ class VNLunarCalendar extends HTMLElement {
           margin-bottom: 8px;
           border-radius: 20px;
 
-          ${st.calendarbox_nav_background}
+          ${st.calendarbox_nav}
         }
 
         .vn-lunar-card .calendarbox .calendar-nav .month{${st.calendarbox_nav_month}}
@@ -1590,6 +1825,15 @@ class VNLunarCalendar extends HTMLElement {
           ${st.calendarbox_cell_hover}
         }
 
+        .vn-lunar-card .calendarbox .calendar-wrapper.readonly .calendar-track .calendar-grid .cell{
+          cursor: grab;
+        }
+
+        .vn-lunar-card .calendarbox .calendar-wrapper.readonly .calendar-track .calendar-grid .cell:hover{
+          transform: none;
+          background: inherit;
+        }
+
         .vn-lunar-card .calendarbox .calendar-wrapper .calendar-track .calendar-grid .today {${st.calendarbox_today}}
         .vn-lunar-card .calendarbox .calendar-wrapper .calendar-track .calendar-grid .solar-day {${st.calendarbox_solarday}}
         .vn-lunar-card .calendarbox .calendar-wrapper .calendar-track .calendar-grid .lunar-day {${st.calendarbox_lunarday}}
@@ -1623,6 +1867,68 @@ class VNLunarCalendar extends HTMLElement {
     `;
 
     return html;
+  }
+
+  // ----------- helpers ---------
+
+  isHideGoodHour() {
+    const entityId = this.config?.entity_hide_goodhour;
+
+    if (!entityId) {
+      return false;
+    }
+
+    return this._hass?.states?.[entityId]?.state === "on";
+  }
+
+  isHideGoodDay() {
+    const entityId = this.config?.entity_hide_goodday;
+
+    if (!entityId) {
+      return true;
+    }
+
+    return this._hass?.states?.[entityId]?.state === "on";
+  }
+
+  isHideEvent() {
+    const entityId = this.config?.entity_hide_events;
+
+    if (!entityId) {
+      return false;
+    }
+
+    return this._hass?.states?.[entityId]?.state === "on";
+  }
+
+  isHideIsVeg() {
+    const entityId = this.config?.entity_hide_isveg;
+
+    if (!entityId) {
+      return true;
+    }
+
+    return this._hass?.states?.[entityId]?.state === "on";
+  }
+
+  isReadonly() {
+    const entityId = this.config?.entity_readonly;
+
+    if (!entityId) {
+      return false;
+    }
+
+    return this._hass?.states?.[entityId]?.state === "on";
+  }
+
+  isNoBg() {
+    const entityId = this.config?.entity_nobg;
+
+    if (!entityId) {
+      return false;
+    }
+
+    return this._hass?.states?.[entityId]?.state === "on";
   }
 
   getCardSize() {

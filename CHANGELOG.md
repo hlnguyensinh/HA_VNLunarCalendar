@@ -30,3 +30,27 @@
 	entity_component: input_boolean.vn_lunar_connected
 	```
 	
+## [1.1.0] - 2026-05-04
+
+### Function:
+- Get good hours in a day with current time
+- Get status "Hoàng đạo/Hắc đạo" realtime 
+
+### Entity:
+- Add entity input_boolean for disable click on calendar: `entity_uireadonly` (default: false)
+- Add entity input_boolean for hide good hour: `entity_hide_goodhour` (default: false)
+- Add entity input_boolean for hide good day: `entity_hide_goodday` (default: true)
+- Add entity input_boolean for hide events: `entity_hide_event` (default: false)
+- Add entity input_boolean for hide is vegetarian day status: `entity_hide_isveg` (default: true)
+- Add entity input_boolean for no background: `entity_nobg`  (default: false)
+
+### Example
+```
+- type: custom:vn-lunar-calendar
+  entity_hide_goodhour: input_boolean.vn_lunar_hide_goodhour
+  entity_hide_goodday: input_boolean.vn_lunar_hide_goodday
+  entity_hide_events: input_boolean.vn_lunar_hide_events
+  entity_hide_isveg: input_boolean.vn_lunar_hide_isveg
+  entity_nobg: input_boolean.vn_lunar_nobg
+  entity_readonly: input_boolean.vn_lunar_calendar_readonly
+```

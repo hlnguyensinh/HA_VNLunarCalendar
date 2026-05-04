@@ -61,22 +61,6 @@ Xuất phát từ nhu cầu cá nhân trong việc tìm kiếm các ngày chay �
     background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
   ```
 
-- Cập nhật entity:
-  - Home Assistant -> Helpers -> Create Helper:
-    - input_text:
-      - Name: _`your_input_text`_ (ex: vn_lunar_selected)
-      - Advanced settings -> Maximum length: `255`
-    - input_boolean
-      - Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
-    - input_boolean
-      - Name: _`your_input_boolean2`_ (ex: vn_lunar_connected)
-
-  ```yaml
-  - type: custom:vn-lunar-calendar
-    entity_selected_lunar: input_text.vn_lunar_selected
-    entity_isveg: input_boolean.vn_lunar_veg
-    entity_component: input_boolean.vn_lunar_connected
-  ```
 
 ### 📦 Integration:
 
@@ -117,23 +101,19 @@ A Vietnamese lunar calendar designed for Home Assistant and web usage.
     background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
     background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
   ```
+ 
+### Entity table
 
-- Update entity:
-  - Home Assistant -> Helpers -> Create Helper:
-    - input_text:
-      - Name: _`your_input_text`_ (ex: vn_lunar_selected)
-      - Advanced settings -> Maximum length: `255`
-    - input_boolean
-      - Name: _`your_input_boolean`_ (ex: vn_lunar_veg)
-    - input_boolean
-      - Name: _`your_input_boolean2`_ (ex: vn_lunar_connected)
+| Name | Type | Default value | Description
+| --- | --- |:---:| --- |
+|entity_component | input_boolean | N/A | Get status component connection
+|entity_nobg | input_boolean | False | Remove background card
+|entity_readonly | input_boolean | False | Disable click on calendar
+|entity_hide_goodhour | input_boolean | False | Hide good hour tag
+|entity_hide_goodday | input_boolean | True | Hide good day tag
+|entity_hide_events | input_boolean | False | Hide lunar events tag
+|entity_hide_isveg | input_boolean | True | Hide vegetarian day status tag
 
-  ```yaml
-  - type: custom:vn-lunar-calendar
-    entity_selected_lunar: input_text.vn_lunar_selected
-    entity_isveg: input_boolean.vn_lunar_veg
-    entity_component: input_boolean.vn_lunar_connected
-  ```
 
 ### 📦 Integration:
 
