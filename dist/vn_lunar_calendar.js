@@ -1,6 +1,6 @@
 // ======================= COMMON =======================
 const TIME_ZONE = 7;
-//const VERSION = "1.1.0";
+//const VERSION = "1.1.2";
 
 // console.log(`VN Lunar Calendar version: ${VERSION}`);
 // ======================= VNCalendarComponent =======================
@@ -67,6 +67,23 @@ class VNCalendarComponent {
     );
 
     return result.response;
+  }
+
+  getThoiThan() {
+    return {
+      Tý: "23:00-01:00",
+      Sửu: "01:00-03:00",
+      Dần: "03:00-05:00",
+      Mão: "05:00-07:00",
+      Thìn: "07:00-09:00",
+      Tỵ: "09:00-11:00",
+      Ngọ: "11:00-13:00",
+      Mùi: "13:00-15:00",
+      Thân: "15:00-17:00",
+      Dậu: "17:00-19:00",
+      Tuất: "19:00-21:00",
+      Hợi: "21:00-23:00",
+    };
   }
 }
 

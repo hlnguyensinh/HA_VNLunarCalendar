@@ -54,3 +54,6 @@
   entity_nobg: input_boolean.vn_lunar_nobg
   entity_readonly: input_boolean.vn_lunar_calendar_readonly
 ```
+
+## [1.1.1] & [1.1.2] - 2026-05-04
+- Update component connection
