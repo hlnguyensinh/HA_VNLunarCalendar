@@ -19,9 +19,10 @@
 
 ## ✨ Demo
 
-<img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_day.gif" width="300" alt="VN Lunar Calendar - Day" />
-<img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_night.gif" width="300" alt="VN Lunar Calendar - Night" />
-<img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_night2.gif" width="300" alt="VN Lunar Calendar - Night 2" />
+<img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_day.gif" width="200" alt="VN Lunar Calendar - Day" />
+<img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_night.gif" width="200" alt="VN Lunar Calendar - Night" />
+<img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_night2.gif" width="200" alt="VN Lunar Calendar - Night 2" />
+<img src="https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/screenshots/demo_themes.gif" width="200" alt="VN Lunar Calendar - Themes" />
 
 ---
 
