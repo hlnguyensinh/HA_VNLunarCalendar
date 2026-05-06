@@ -1,6 +1,6 @@
 // ======================= COMMON =======================
 const TIME_ZONE = 7;
-//const VERSION = "1.1.2";
+// const VERSION = "1.2.0";
 
 // console.log(`VN Lunar Calendar version: ${VERSION}`);
 // ======================= VNCalendarComponent =======================
@@ -263,7 +263,7 @@ class Lunar_HoNgocDuc {
    * -----------------------------------------------------------------------------------
    */
 
-  constructor() {}
+  constructor() { }
 
   PI = Math.PI;
 
@@ -892,6 +892,134 @@ class LunarCache {
 // console.log(lunarCache.isCurrentGoodHour(testdate.goodHours));
 // console.log(lunarCache.getCurrentHourInfo(testdate));
 
+// ======================= EntityHelper =======================
+
+class EntityHelper {
+  constructor(card) {
+    this.card = card;
+  }
+
+  // ===== CORE =====
+  _getEntityId(name) {
+    return this.card?.config?.[name] || null;
+  }
+
+  _getHass() {
+    return this.card?._hass;
+  }
+
+  _getDomain(entityId) {
+    return entityId?.split(".")[0];
+  }
+
+  // ===== GET =====
+  get(name) {
+    const hass = this._getHass();
+    const entityId = this._getEntityId(name);
+
+    if (!hass || !entityId) return null;
+
+    return hass.states?.[entityId] || null;
+  }
+
+  state(name) {
+    return this.get(name)?.state ?? null;
+  }
+
+  attr(name, attr) {
+    return this.get(name)?.attributes?.[attr];
+  }
+
+  exists(name) {
+    return !!this.get(name);
+  }
+
+  toggle(name) {
+    const current = this.state(name);
+    this.set(name, current !== "on");
+  }
+
+  isOn(name) {
+    return this.state(name) === "on";
+  }
+
+  stateOr(name, fallback = null) {
+    return this.state(name) ?? fallback;
+  }
+
+  // ===== SET =====
+  set(name, value) {
+    const hass = this._getHass();
+    const entityId = this._getEntityId(name);
+
+    if (!hass || !entityId) {
+      // console.warn(`[VN Lunar Calendar] missing entity: ${name}`);
+      return;
+    }
+
+    const entity = hass.states?.[entityId];
+    const domain = this._getDomain(entityId);
+
+    if (entity && entity.state === String(value)) {
+      return;
+    }
+
+    // console.log({ domain, name, value });
+    try {
+      switch (domain) {
+        case "input_boolean":
+          hass.callService(domain, value ? "turn_on" : "turn_off", {
+            entity_id: entityId,
+          });
+          break;
+
+        case "input_text":
+          hass.callService(domain, "set_value", {
+            entity_id: entityId,
+            value: String(value),
+          });
+          break;
+
+        case "input_number":
+          hass.callService(domain, "set_value", {
+            entity_id: entityId,
+            value: Number(value),
+          });
+          break;
+
+        case "input_select":
+          hass.callService(domain, "select_option", {
+            entity_id: entityId,
+            option: value,
+          });
+          break;
+
+        default:
+          console.warn(`[VN Lunar Calendar] unsupported domain: ${domain}`);
+      }
+    } catch (err) {
+      console.error("[VN Lunar Calendar] set error:", err);
+    }
+  }
+
+  async setAndWait(name, value, timeout = 1000) {
+    this.set(name, value);
+
+    const start = Date.now();
+
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        const state = this.state(name);
+
+        if (state === String(value) || Date.now() - start > timeout) {
+          clearInterval(interval);
+          resolve(state);
+        }
+      }, 100);
+    });
+  }
+}
+
 // ======================= VN LUNAR CALENDAR =======================
 // const EMOJI = {
 //   veg: "🥬",
@@ -910,6 +1038,7 @@ class LunarCache {
 
 class VNLunarCalendar extends HTMLElement {
   constructor() {
+    // console.log('constructor');
     super();
     this.attachShadow({ mode: "open" });
 
@@ -920,18 +1049,29 @@ class VNLunarCalendar extends HTMLElement {
     this.isAnimating = false;
     this._initialized = false;
     this._initializing = false;
+
+    this.entitiescache = {};
+
+    this.entity = new EntityHelper(this);
   }
 
   setConfig(config) {
+    // console.log('setConfig');
+
     this.config = config || {};
   }
 
   set hass(hass) {
+    // console.log('set hass');
     this._hass = hass;
 
-    // this.hasService  = hass.config?.components.includes(DOMAIN) || false;
-    this.hasService = hass.services?.[DOMAIN]?.[SERVICE_TODAY] || false;
-    this.hasService = this.hasService ? true : false;
+    if (this.getEntity_UseComponent()) {
+      // this.hasService  = hass.config?.components.includes(DOMAIN) || false;
+      this.hasService = hass.services?.[DOMAIN]?.[SERVICE_TODAY] || false;
+      this.hasService = this.hasService ? true : false;
+    } else {
+      this.hasService = false;
+    }
 
     if (this.hasService) {
       if (!this.clsLunar) {
@@ -947,6 +1087,7 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async handleHass() {
+    // console.log('handleHass');
     if (this._initializing) {
       return;
     }
@@ -974,6 +1115,7 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async initializeCard() {
+    // console.log('initializeCard');
     await this.init();
 
     this.render();
@@ -982,6 +1124,7 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async init() {
+    // console.log('init');
     if (this.hasService) {
       const today = await this.clsLunarCache.getToday();
 
@@ -1004,6 +1147,7 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async isNewDay() {
+    // console.log('isNewDay');
     const oldDay = this.presentDate?.getDate();
 
     if (this.hasService) {
@@ -1026,6 +1170,7 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async handleRender() {
+    // console.log('handleRender');
     let [buildDay, buildCalendar, buildStyle] = await Promise.all([
       this.buildDayDetail(this.selectedDate),
       this.buildCalendar(this.calendarDate),
@@ -1052,6 +1197,7 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async render() {
+    // console.log('render');
     await this.handleRender();
 
     const track = this.shadowRoot.querySelector(".calendar-track");
@@ -1068,9 +1214,11 @@ class VNLunarCalendar extends HTMLElement {
     this.bindCalendarDayClick();
     this.bindDayBoxClick();
 
-    this.updateSelectedLunarEntity(this.selectedDate);
+    this.updateEntities(this.selectedDate);
   }
+
   async updateTheme() {
+    // console.log('updateTheme');
     const style = this.shadowRoot.querySelector("style");
 
     if (!style) return;
@@ -1079,6 +1227,7 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async updateDayDetail(date) {
+    // console.log('updateDayDetail');
     const container = this.shadowRoot.querySelector(".daybox");
 
     if (!container) return;
@@ -1087,14 +1236,15 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async bindCalendarDayClick() {
+    // console.log('bindCalendarDayClick');
     const wrapper = this.shadowRoot.querySelector(".calendar-wrapper");
 
-    if (this.isReadonly()) {
+    if (this.getEntity_Readonly()) {
       return;
     }
 
     wrapper.addEventListener("pointerup", async (e) => {
-      if (this.isReadonly()) {
+      if (this.getEntity_Readonly()) {
         return;
       }
 
@@ -1118,21 +1268,24 @@ class VNLunarCalendar extends HTMLElement {
       this.updateDayDetail(date);
       this.highlightSelected(cell);
 
-      this.updateSelectedLunarEntity(date);
+      this.updateEntities(date);
     });
   }
 
   highlightSelected(selectedCell) {
+    // console.log('highlightSelected');
     this.removeHighlightSelected();
     selectedCell.classList.add("selected");
   }
 
   removeHighlightSelected() {
+    // console.log('removeHighlightSelected');
     const cells = this.shadowRoot.querySelectorAll(".cell");
     cells.forEach((c) => c.classList.remove("selected"));
   }
 
   bindDayBoxClick() {
+    // console.log('removeHighlightSelected');
     const cell = this.shadowRoot.querySelector(".daybox");
 
     cell.addEventListener("pointerup", (e) => {
@@ -1147,16 +1300,22 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async buildDayDetail(date) {
+    // console.log('buildDayDetail');
     const dayinfo = await this.clsLunarCache.get(date.getDate(), date.getMonth() + 1, date.getFullYear());
     const hourinfo = this.clsLunarCache.getCurrentHourInfo(dayinfo);
 
     const specified_hidden = false;
     const solarterm_hidden = false;
 
-    const isveg_hidden = this.isHideIsVeg();
-    const event_hidden = this.isHideEvent();
-    const goodhour_hidden = this.isHideGoodHour();
-    const goodday_hidden = this.isHideGoodDay();
+    const isveg_hidden = this.getEntity_HideIsVeg();
+    const event_hidden = this.getEntity_HideEvent();
+    const goodhour_hidden = this.getEntity_HideGoodHour();
+    const goodday_hidden = this.getEntity_HideGoodDay();
+
+    let textpanel = this.getEntity_TextPanel();
+    if (textpanel) {
+      textpanel = `<div class="textpanel">${textpanel}</div>`;
+    }
 
     let html = `
       <div class="dayinfo">
@@ -1188,14 +1347,15 @@ class VNLunarCalendar extends HTMLElement {
           ${dayinfo.lunar.day === 1 && !specified_hidden ? "<span>🌑 Mùng 1</span>" : ""}${dayinfo.lunar.day === 15 && !specified_hidden ? "<span>🌕 Rằm</span>" : ""}
           ${dayinfo.lunar.events?.length ? `<span class="${event_hidden ? "hidden" : ""}">🌸 ${dayinfo.lunar.events.join(", ")}</span>` : ""}
           <span class="${goodhour_hidden ? "hidden" : ""}">${hourinfo.isgoodhour ? "🟢 Hoàng đạo" : "⚡ Hắc đạo"} - Giờ ${hourinfo.hour}</span>
-          
         </div>
+        ${textpanel ? `<div class="textpanel">${textpanel}</div>` : ''}
       </div>
     `;
     return html;
   }
 
   async changeMonth(step) {
+    // console.log('changeMonth');
     if (this.isAnimating) {
       return;
     }
@@ -1232,6 +1392,7 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   buildMonthCalendar(date, monthData, extraClass = "") {
+    // console.log('buildMonthCalendar');
     const year = date.getFullYear();
     const month = date.getMonth();
 
@@ -1305,6 +1466,7 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async renderCalendars(date) {
+    // console.log('renderCalendars');
     const prev = new Date(date);
     prev.setMonth(prev.getMonth() - 1, 1);
 
@@ -1346,9 +1508,10 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   async buildCalendar(date) {
+    // console.log('buildCalendar');
     let renderCalendars = await this.renderCalendars(date);
 
-    const readonlyClass = this.isReadonly() ? "readonly" : "";
+    const readonlyClass = this.getEntity_Readonly() ? "readonly" : "";
 
     let html = `
       <div class="calendar-nav">
@@ -1367,6 +1530,7 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   initSwipe() {
+    // console.log('initSwipe');
     const wrapper = this.shadowRoot.querySelector(".calendar-wrapper");
     const track = this.shadowRoot.querySelector(".calendar-track");
 
@@ -1448,11 +1612,8 @@ class VNLunarCalendar extends HTMLElement {
     wrapper.addEventListener("pointercancel", handleEnd);
   }
 
-  async updateSelectedLunarEntity(date) {
-    const entity_selected_lunar = this.config?.entity_selected_lunar;
-    const entity_selected_isveg = this.config?.entity_selected_isveg;
-    const entity_component = this.config?.entity_component;
-
+  async updateEntities(date) {
+    // console.log('updateEntities');
     if (!this._hass) {
       return;
     }
@@ -1469,39 +1630,56 @@ class VNLunarCalendar extends HTMLElement {
       },
     };
 
-    try {
-      if (entity_selected_lunar) {
-        this._hass.callService("input_text", "set_value", {
-          entity_id: entity_selected_lunar,
-          value: JSON.stringify(payload),
-        });
-      }
-    } catch (err) {
-      console.error("VN Lunar Calendar selected lunar error:", err);
-    }
+    this.setEntity_SelectedLunar(JSON.stringify(payload));
+    this.setEntity_SelectedIsVeg(dayinfo.isVeg);
+    this.setEntity_ComponentConnected(this.hasService);
 
-    try {
-      if (entity_selected_isveg) {
-        this._hass.callService("input_boolean", dayinfo.isVeg ? "turn_on" : "turn_off", {
-          entity_id: entity_selected_isveg,
-        });
-      }
-    } catch (err) {
-      console.error("VN Lunar Calendar selected isveg error:", err);
-    }
-
-    try {
-      if (entity_component) {
-        this._hass.callService("input_boolean", this.hasService ? "turn_on" : "turn_off", {
-          entity_id: entity_component,
-        });
-      }
-    } catch (err) {
-      console.error("VN Lunar Calendar component error:", err);
-    }
+    // console.log(this.entitiescache);
   }
 
-  async getStyle() {
+  styleBasic() {
+    // console.log('styleBasic');
+    return {
+      card: "",
+
+      daybox: "justify-content: space-evenly; height:10rem;",
+      daybox_dayinfo: "min-width: 14rem; text-align:center;",
+      daybox_solar: "font-size:1.2em;",
+      daybox_lunar: "font-size:1.5em; font-weight: bold",
+      daybox_vegday: "color: orange",
+      daybox_daycanchi: "",
+      daybox_monthcanchi: "",
+
+      daybox_dayextra_tags: "background: rgba(99, 159, 237, 0.1);",
+      daybox_dayextra_textpanel: "background: rgba(99, 159, 237, 0.1);",
+
+      calendarbox: "",
+      calendarbox_nav: "opacity:0.9; background: rgba(99, 159, 237, 0.1);",
+      calendarbox_nav_month: "",
+      calendarbox_nav_button: "",
+
+      calendarbox_header: "background: rgb(99, 159, 237); color: #FFFFFF",
+      calendarbox_header_sunday: "color: #f5ad42",
+      calendarbox_cell: "border: 1.5px solid rgba(99, 159, 237,0.1); background: rgba(99, 159, 237,0.1);",
+      calendarbox_cell_hover: "background: rgba(99,159,237,0.2);",
+
+      calendarbox_solarday: "text-align: center;",
+      calendarbox_lunarday: "font-size: .8rem; text-align: center;",
+      calendarbox_sunday: "color: #f5ad42",
+      calendarbox_today: "background: rgba(99, 159, 237, .6);",
+      calendarbox_selected: "border: 1.5px solid rgba(99,159,237,0.6);",
+
+      calendarbox_dotveg: "background: orange;",
+      calendarbox_dotevent: "background: purple",
+      calendarbox_othermonth_solar: "color: rgba(99, 159, 237, .3);",
+      calendarbox_othermonth_lunar: "color: rgba(99, 159, 237, .3);",
+      calendarbox_firstmonth_solar: "text-decoration: underline;",
+      calendarbox_firstmonth_lunar: "text-decoration: underline;",
+    };
+  }
+
+  async styleStandard() {
+    // console.log('styleStandard');
     const bg_day =
       this.config?.background_day ||
       "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg";
@@ -1526,16 +1704,18 @@ class VNLunarCalendar extends HTMLElement {
 
     let style = isNight ? "night" + (dayinfo.lunar.day == 15 ? "-15" : "") : "";
 
-    const nobg = this.isNoBg();
-    if (nobg) style = "no_background";
-
     switch (style) {
       case "night-15":
         return {
-          background: `background: url('${bg_night}'), linear-gradient(rgba(10, 25, 50, 0.55), rgba(10, 25, 50, 0.55))`,
-          background_attb: "/*background-attachment: fixed;*/",
+          card: `background: url('${bg_night}'), linear-gradient(rgba(10, 25, 50, 0.55), rgba(10, 25, 50, 0.55));
+                background-position: center center;
+                background-size: cover;
+                background-repeat: no-repeat;
+                /*background-attachment: fixed;*/`,
 
-          daybox: "background: rgba(0,0,0,0.1); /*backdrop-filter: blur(8px);*/",
+          daybox:
+            "justify-content: space-evenly; height:10rem; background: rgba(0,0,0,0.1); /*backdrop-filter: blur(8px);*/",
+          daybox_dayinfo: "min-width: 14rem; text-align:center;",
           daybox_solar: "font-size:1.2em; color: #E6F0FF",
           daybox_lunar: "font-size:1.5em; color: #FFFFFF",
           daybox_vegday: "color: orange",
@@ -1543,6 +1723,7 @@ class VNLunarCalendar extends HTMLElement {
           daybox_monthcanchi: "color: #A8C7FF",
 
           daybox_dayextra_tags: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
+          daybox_dayextra_textpanel: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
 
           calendarbox:
             "background: rgba(20,40,70,0.45); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
@@ -1571,10 +1752,15 @@ class VNLunarCalendar extends HTMLElement {
         };
       case "night":
         return {
-          background: `background: url('${bg_night_half}'), linear-gradient(rgba(10, 25, 50, 0.55), rgba(10, 25, 50, 0.55))`,
-          background_attb: "/*background-attachment: fixed;*/",
+          card: ` background: url('${bg_night_half}'), linear-gradient(rgba(10, 25, 50, 0.55), rgba(10, 25, 50, 0.55));
+                background-position: center center;
+                background-size: cover;
+                background-repeat: no-repeat;
+                /*background-attachment: fixed;*/`,
 
-          daybox: "background: rgba(0,0,0,0.1); /*backdrop-filter: blur(8px);*/",
+          daybox:
+            "justify-content: space-evenly; height:10rem; background: rgba(0,0,0,0.1); /*backdrop-filter: blur(8px);*/",
+          daybox_dayinfo: "min-width: 14rem; text-align:center;",
           daybox_solar: "font-size:1.2em; color: #E6F0FF",
           daybox_lunar: "font-size:1.5em; color: #FFFFFF",
           daybox_vegday: "color: orange",
@@ -1582,6 +1768,7 @@ class VNLunarCalendar extends HTMLElement {
           daybox_monthcanchi: "color: #A8C7FF",
 
           daybox_dayextra_tags: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
+          daybox_dayextra_textpanel: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
 
           calendarbox:
             "background: rgba(20,40,70,0.45); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
@@ -1608,49 +1795,17 @@ class VNLunarCalendar extends HTMLElement {
           calendarbox_firstmonth_solar: "text-decoration: underline;",
           calendarbox_firstmonth_lunar: "text-decoration: underline;",
         };
-      case "no_background":
-        return {
-          background: "",
-          background_attb: "",
-
-          daybox: "",
-          daybox_solar: "font-size:1.2em;",
-          daybox_lunar: "font-size:1.5em; font-weight: bold",
-          daybox_vegday: "color: orange",
-          daybox_daycanchi: "",
-          daybox_monthcanchi: "",
-
-          daybox_dayextra_tags: "background: rgba(99, 159, 237, 0.1);",
-
-          calendarbox: "",
-          calendarbox_nav: "opacity:0.9; background: rgba(99, 159, 237, 0.1);",
-          calendarbox_nav_month: "",
-          calendarbox_nav_button: "",
-
-          calendarbox_header: "background: rgb(99, 159, 237); color: #FFFFFF",
-          calendarbox_header_sunday: "color: #f5ad42",
-          calendarbox_cell: "border: 1.5px solid rgba(99, 159, 237,0.1); background: rgba(99, 159, 237,0.1);",
-          calendarbox_cell_hover: "background: rgba(99,159,237,0.2);",
-
-          calendarbox_solarday: "text-align: center;",
-          calendarbox_lunarday: "font-size: .8rem; text-align: center;",
-          calendarbox_sunday: "color: #f5ad42",
-          calendarbox_today: "background: rgba(99, 159, 237, .6);",
-          calendarbox_selected: "border: 1.5px solid rgba(99,159,237,0.6);",
-
-          calendarbox_dotveg: "background: orange;",
-          calendarbox_dotevent: "background: purple",
-          calendarbox_othermonth_solar: "color: rgba(99, 159, 237, .3);",
-          calendarbox_othermonth_lunar: "color: rgba(99, 159, 237, .3);",
-          calendarbox_firstmonth_solar: "text-decoration: underline;",
-          calendarbox_firstmonth_lunar: "text-decoration: underline;",
-        };
       default:
         return {
-          background: `background: url('${bg_day}') /*, linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.15))*/`,
-          background_attb: "/*background-attachment: fixed;*/",
+          card: `background: url('${bg_day}') /*, linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.15))*/;
+                background-position: center center;
+                background-size: cover;
+                background-repeat: no-repeat;
+                /*background-attachment: fixed;*/`,
 
-          daybox: "/*background: rgba(255,255,255,0.8); backdrop-filter: blur(8px);*/",
+          daybox:
+            "justify-content: space-evenly; height:10rem;/*background: rgba(255,255,255,0.8); backdrop-filter: blur(8px);*/",
+          daybox_dayinfo: "min-width: 14rem; text-align:center;",
           daybox_solar: "font-size:1.2em; color: #3F7FA6",
           daybox_lunar: "font-size:1.5em; color: #1F5F8B; font-weight: bold",
           daybox_vegday: "color: orange",
@@ -1658,6 +1813,7 @@ class VNLunarCalendar extends HTMLElement {
           daybox_monthcanchi: "color: #1F5F8B",
 
           daybox_dayextra_tags: "background: rgba(130, 163, 185, 0.5); color: #ffffff",
+          daybox_dayextra_textpanel: "background: rgba(130, 163, 185, 0.5); color: #ffffff",
 
           calendarbox:
             "background: rgba(255,255,255,0.5); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
@@ -1687,38 +1843,91 @@ class VNLunarCalendar extends HTMLElement {
     }
   }
 
+  async importTheme(theme) {
+    // console.log('importTheme');
+    try {
+      const version = `?v=${Date.now()}`;
+      const module = await import(`./themes/${theme}.js${version}`);
+      return module.default;
+    } catch (err) {
+      console.warn("Theme load failed:", theme);
+      return null;
+    }
+  }
+
+  async styleCustom(theme) {
+    // console.log('styleCustom');
+    this._themeCache = this._themeCache || {};
+    this._themePromise = this._themePromise || {};
+
+    const useCache = !this.getEntity_ThemeNoCache();
+
+    if (useCache && this._themeCache[theme]) {
+      return this._themeCache[theme];
+    }
+
+    // tránh gọi import nhiều lần cùng lúc
+    if (this._themePromise[theme]) {
+      return this._themePromise[theme];
+    }
+
+    this._themePromise[theme] = this.importTheme(theme).then((data) => {
+      delete this._themePromise[theme];
+
+      if (data) {
+        this._themeCache[theme] = { ...data };
+      }
+
+      return data;
+    });
+
+    return this._themePromise[theme];
+  }
+
+  applyCustomTheme(base, custom) {
+    if (!custom) return base;
+
+    const result = { ...base };
+
+    Object.keys(custom).forEach((key) => {
+      if (custom[key] !== undefined) {
+        result[key] = custom[key];
+      }
+    });
+
+    return result;
+  }
+
+  async getStyle() {
+    // console.log('getStyle');
+    const standard = this.styleStandard();
+    const base = await this.styleBasic();
+
+    const theme = this.getEntity_Theme()?.toLowerCase();
+    if (!theme || theme == "standard") return standard;
+
+    const custom = await this.styleCustom(theme);
+    if (!custom) return standard;
+
+    return this.applyCustomTheme(base, custom);
+  }
+
   async buildStyleCard() {
+    // console.log('buildStyleCard');
     let st = await this.getStyle();
 
     let html = `
         .vn-lunar-card {
           padding:5px;
-          
-          ${st.background};
-          background-position: center center;
-          background-size: cover;
-          background-repeat: no-repeat;
-		  
-          /*border: 1px solid rgba(255,255,255,0.3);*/
           border-radius: 15px;
           
-          ${st.background_attb}
+          ${st.card};
         }
 
         /* --------- daybox -------- */
         .vn-lunar-card .daybox {
           display: flex;
           align-items: center;
-          justify-content: space-evenly;
-          height:10rem;
-		  
-          /*
-		      border-radius: 10px 10px 0 0;
-
-          
-          border: 1px solid rgba(255,255,255,0.3);
-          box-shadow: 0 8px 32px rgba(31,95,139,0.15);
-          */
 
           cursor: pointer;
 
@@ -1726,8 +1935,7 @@ class VNLunarCalendar extends HTMLElement {
         }
 
         .vn-lunar-card .daybox .dayinfo {
-          min-width: 14rem;
-          text-align:center;
+          ${st.daybox_dayinfo}
         }
 
         .vn-lunar-card .daybox .dayinfo .solar {${st.daybox_solar}}
@@ -1752,15 +1960,16 @@ class VNLunarCalendar extends HTMLElement {
         .vn-lunar-card .daybox .dayextra .tags span.hidden {
           display: none;
         }
+          
+        .vn-lunar-card .daybox .dayextra .textpanel {
+          ${st.daybox_dayextra_textpanel}
+        }
+
+        
 
         /* --------- calendarbox -------- */
         .vn-lunar-card .calendarbox {
           border-radius: 0 0 10px 10px;
-
-          /*
-          border: 1px solid rgba(255,255,255,0.3);
-          box-shadow: 0 8px 32px rgba(31,95,139,0.15);
-          */
 
           ${st.calendarbox}
         }
@@ -1887,65 +2096,119 @@ class VNLunarCalendar extends HTMLElement {
   }
 
   // ----------- helpers ---------
-
-  isHideGoodHour() {
-    const entityId = this.config?.entity_hide_goodhour;
-
-    if (!entityId) {
-      return false;
+  getEntityState(key, defnull = null) {
+    if (!this._hass || !this.entity.get(key)) {
+      return defnull;
     }
 
-    return this._hass?.states?.[entityId]?.state === "on";
+    return this.entity.state(key);
   }
 
-  isHideGoodDay() {
-    const entityId = this.config?.entity_hide_goodday;
-
-    if (!entityId) {
-      return true;
+  getEntityOnOff(key, defnull = false) {
+    if (!this._hass || !this.entity.get(key)) {
+      return defnull ? true : false;
     }
 
-    return this._hass?.states?.[entityId]?.state === "on";
+    return this.entity.isOn(key);
   }
 
-  isHideEvent() {
-    const entityId = this.config?.entity_hide_events;
+  getEntity_TextPanel() {
+    const key = "entity_textpanel";
+    const data = this.getEntityState(key);
 
-    if (!entityId) {
-      return false;
-    }
-
-    return this._hass?.states?.[entityId]?.state === "on";
+    this.entitiescache[key] = data;
+    return data;
   }
 
-  isHideIsVeg() {
-    const entityId = this.config?.entity_hide_isveg;
+  getEntity_HideGoodHour() {
+    const key = "entity_hide_goodhour";
+    const data = this.getEntityOnOff(key);
 
-    if (!entityId) {
-      return true;
-    }
-
-    return this._hass?.states?.[entityId]?.state === "on";
+    this.entitiescache[key] = data;
+    return data;
   }
 
-  isReadonly() {
-    const entityId = this.config?.entity_readonly;
+  getEntity_HideGoodDay() {
+    const key = "entity_hide_goodday";
+    const data = this.getEntityOnOff(key, true);
 
-    if (!entityId) {
-      return false;
-    }
-
-    return this._hass?.states?.[entityId]?.state === "on";
+    this.entitiescache[key] = data;
+    return data;
   }
 
-  isNoBg() {
-    const entityId = this.config?.entity_nobg;
+  getEntity_HideEvent() {
+    const key = "entity_hide_event";
+    const data = this.getEntityOnOff(key);
 
-    if (!entityId) {
-      return false;
+    this.entitiescache[key] = data;
+    return data;
+  }
+
+  getEntity_HideIsVeg() {
+    const key = "entity_hide_isveg";
+    const data = this.getEntityOnOff(key, true);
+
+    this.entitiescache[key] = data;
+    return data;
+  }
+
+  getEntity_Readonly() {
+    const key = "entity_readonly";
+    const data = this.getEntityOnOff(key);
+
+    this.entitiescache[key] = data;
+    return data;
+  }
+
+  getEntity_Theme() {
+    const key = "entity_theme";
+    const data = this.getEntityState(key, 'standard');
+
+    this.entitiescache[key] = data;
+    return data;
+  }
+
+  getEntity_UseComponent() {
+    const key = "entity_use_component";
+    const data = this.getEntityOnOff(key);
+
+    this.entitiescache[key] = data;
+    return data;
+  }
+
+  getEntity_ThemeNoCache() {
+    const key = "entity_theme_nocache";
+    const data = this.getEntityOnOff(key);
+
+    this.entitiescache[key] = data;
+    return data;
+  }
+
+  setEntity_SelectedLunar(value) {
+    const key = "entity_selected_lunar";
+
+    if (this.entitiescache[key] != value) {
+      this.entitiescache[key] = value;
+      return this.entity.set(key, value);
     }
+  }
 
-    return this._hass?.states?.[entityId]?.state === "on";
+  setEntity_SelectedIsVeg(value) {
+    const key = "entity_selected_isveg";
+
+    if (this.entitiescache[key] != value) {
+      this.entitiescache[key] = value;
+      return this.entity.set(key, value);
+    }
+  }
+
+  setEntity_ComponentConnected(value) {
+    const key = "entity_component_connected";
+
+    if (this.entitiescache[key] != value) {
+      this.entitiescache[key] = value;
+      return this.entity.set(key, value);
+    }
   }
 
   getCardSize() {

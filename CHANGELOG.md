@@ -57,3 +57,30 @@
 
 ## [1.1.1] & [1.1.2] - 2026-05-04
 - Update component connection
+- Update name config's entity
+
+## [1.2.0] - 2026-05-07
+- Removed `entity_nobg`
+- Change name `entity_component` -> `entity_component_connected` (add '_connected')
+- Change name `entity_hide_events` -> `entity_hide_event` (remove 's')
+- Add new `entity_theme`: choose theme for VN Lunar Calendar (ready support more theme), with values:
+	- green
+	- sample
+	- standard (default)
+- Add new `entity_use_component`: use component (True) or not (False)
+- Add new `entity_textpanel`: useful for show entity's state, example: sensor.vn_calendar_day_type
+- Add new `entity_theme_nocache`: no cache themes, turn on to re-design, turn off to get cache for improve performance
+
+### Dynamic themes:
+- Default "standard" theme, if you want to custom, please add file .js to ./themes/
+
+### Summary:
+
+| Name                         | Type          | Default value | Description                                   | ViewOnly |
+| ---------------------------- | ------------- |:-------------:| --------------------------------------------- |:--------:| 
+| `entity_use_component`       | input_boolean | True          | Use component                                 |          |
+| `entity_component_connected` | input_boolean | N/A           | Get status component connection               | x        |
+| `entity_theme`               | input_select  | standard      | Calendar Theme, other load file ./themes/*.js |          |
+| `entity_hide_event`          | input_text    | False         | Hide lunar events tag                         |          |
+| `entity_textpanel`           | any sensor    | N/A           | Show value (ex: sensor.vn_calendar_day_type)  |          |
+| `entity_theme_nocache`       | input_boolean | False         | Not use theme cache                           |          |

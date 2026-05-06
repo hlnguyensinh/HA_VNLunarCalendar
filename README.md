@@ -104,15 +104,19 @@ A Vietnamese lunar calendar designed for Home Assistant and web usage.
  
 ### Entity table
 
-| Name | Type | Default value | Description
-| --- | --- |:---:| --- |
-|entity_component | input_boolean | N/A | Get status component connection
-|entity_nobg | input_boolean | False | Remove background card
-|entity_readonly | input_boolean | False | Disable click on calendar
-|entity_hide_goodhour | input_boolean | False | Hide good hour tag
-|entity_hide_goodday | input_boolean | True | Hide good day tag
-|entity_hide_events | input_boolean | False | Hide lunar events tag
-|entity_hide_isveg | input_boolean | True | Hide vegetarian day status tag
+| Name                         | Type          | Default value | Description                                   |
+| ---------------------------- | ------------- |:-------------:| --------------------------------------------- |
+| `entity_use_component`       | input_boolean | True          | Use component                                 |
+| `entity_component_connected` | input_boolean | N/A           | Get status component connection               |
+| `entity_theme`               | input_select  | standard      | Calendar Theme, other load file ./themes/*.js |
+| `entity_hide_event`          | input_text    | False         | Hide lunar events tag                         |
+| `entity_textpanel`           | any sensor    | N/A           | Show value (ex: sensor.vn_calendar_day_type)  |
+| `entity_theme_nocache`       | input_boolean | False         | Not use theme cache                           |
+| `entity_readonly`            | input_boolean | False         | Disable click on calendar                     |
+| `entity_hide_goodhour`       | input_boolean | False         | Hide good hour tag                            |
+| `entity_hide_goodday`        | input_boolean | True          | Hide good day tag                             |
+| `entity_hide_event`          | input_boolean | False         | Hide lunar events tag                         |
+| `entity_hide_isveg`          | input_boolean | True          | Hide vegetarian day status tag                |
 
 
 ### 📦 Integration:
