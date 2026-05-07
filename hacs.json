@@ -1,7 +1,5 @@
 {
     "name": "VN Lunar Calendar",
     "render_readme": true,
-    "homeassistant": "2023.0.0",
-    "country": ["VN"],
-	"filename": "vn_lunar_calendar.js",
+	"filename": "dist/vn_lunar_calendar.js",
 }
