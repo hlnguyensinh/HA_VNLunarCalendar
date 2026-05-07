@@ -1,11 +1,8 @@
 {
     "name": "VN Lunar Calendar",
-    "content_in_root": false,
-    "filename": "HA_VNLunarCalendar.zip",
+    "content_in_root": true,
     "render_readme": true,
     "homeassistant": "2023.0.0",
     "country": ["VN"],
-    "iot_class": "local_push",
-    "domains": [],
     "zip_release": false
 }
