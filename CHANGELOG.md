@@ -8,7 +8,7 @@
 
 ## [0.0.2] - 2026-04-26
 - Update background links to github.
-> Ex: /local/widget/vn_lunar_calendar/assets/whiteflower.jpg -> https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
+> Ex: /local/widget/vn_lunar_calendar/assets/whiteflower.jpg → https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
 
 ## [0.0.3] - 2026-04-27
 - Hide vegetarian day icon to avoid overflowing the frame
@@ -61,8 +61,8 @@
 
 ## [1.2.0] - 2026-05-07
 - Removed `entity_nobg`
-- Change name `entity_component` -> `entity_component_connected` (add '_connected')
-- Change name `entity_hide_events` -> `entity_hide_event` (remove 's')
+- Change name `entity_component` → `entity_component_connected` (add '_connected')
+- Change name `entity_hide_events` → `entity_hide_event` (remove 's')
 - Add new `entity_theme`: choose theme for VN Lunar Calendar (ready support more theme), with values:
 	- green
 	- sample
