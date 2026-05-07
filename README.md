@@ -7,7 +7,6 @@
   <img src="https://img.shields.io/github/stars/hlnguyensinh/HA_VNLunarCalendar?style=for-the-badge" />
   <img src="https://img.shields.io/github/license/hlnguyensinh/HA_VNLunarCalendar?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Home%20Assistant-Custom%20Card-blue?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Built%20with-ChatGPT-orange?style=for-the-badge" />
 </p>
 
 <p align="center">
@@ -45,25 +44,25 @@ Xuất phát từ nhu cầu cá nhân trong việc tìm kiếm các ngày chay �
 
 ⚠️ Cảnh báo: Nếu không cập nhật **[VN Lunar Calendar Component](#-integration)**, giao diện VN Lunar Calendar có thể hoạt động không đúng hoặc phát sinh lỗi.
 /hacsfiles/HA_VNLunarCalendar/vn_lunar_calendar.js
+
 - HACS -> Custom repositories
-  - Repository: `https://github.com/hlnguyensinh/HA_VNLunarCalendar`
-  - Type: `Dashboard`
+    - Repository: `https://github.com/hlnguyensinh/HA_VNLunarCalendar`
+    - Type: `Dashboard`
 
 - Đơn giản:
 
-  ```yaml
-  - type: custom:vn-lunar-calendar
-  ```
+    ```yaml
+    - type: custom:vn-lunar-calendar
+    ```
 
 - Tùy chỉnh background:
 
-  ```yaml
-  - type: custom:vn-lunar-calendar
-    background_day: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
-    background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
-    background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
-  ```
-  
+    ```yaml
+    - type: custom:vn-lunar-calendar
+      background_day: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
+      background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
+      background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
+    ```
 
 ### 📦 Integration:
 
@@ -90,40 +89,39 @@ A Vietnamese lunar calendar designed for Home Assistant and web usage.
 ⚠️ Warning: If the **[VN Lunar Calendar Component](#-integration-1)** is not updated, the VN Lunar Calendar Frontend may not work correctly or could cause errors.
 
 - HACS -> Custom repositories
-  - Repository: `https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_lunar_calendar.js`
-  - Type: `Dashboard`
+    - Repository: `https://github.com/hlnguyensinh/HA_VNLunarCalendar/releases/latest/download/vn_lunar_calendar.js`
+    - Type: `Dashboard`
 
 - Basic:
 
-  ```yaml
-  - type: custom:vn-lunar-calendar
-  ```
+    ```yaml
+    - type: custom:vn-lunar-calendar
+    ```
 
 - Change background:
 
-  ```yaml
-  - type: custom:vn-lunar-calendar
-    background_day: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
-    background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
-    background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
-  ```
- 
+    ```yaml
+    - type: custom:vn-lunar-calendar
+      background_day: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg
+      background_night: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon1.jpg
+      background_nighthalf: https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg
+    ```
+
 ### Entity table
 
-| Name                         | Type          | Default value | Description                                   |
-| ---------------------------- | ------------- |:-------------:| --------------------------------------------- |
-| `entity_use_component`       | input_boolean | True          | Use component                                 |
-| `entity_component_connected` | input_boolean | N/A           | Get status component connection               |
-| `entity_theme`               | input_select  | standard      | Calendar Theme, other load file ./themes/*.js |
-| `entity_hide_event`          | input_text    | False         | Hide lunar events tag                         |
-| `entity_textpanel`           | any sensor    | N/A           | Show value (ex: sensor.vn_calendar_day_type)  |
-| `entity_theme_nocache`       | input_boolean | False         | Not use theme cache                           |
-| `entity_readonly`            | input_boolean | False         | Disable click on calendar                     |
-| `entity_hide_goodhour`       | input_boolean | False         | Hide good hour tag                            |
-| `entity_hide_goodday`        | input_boolean | True          | Hide good day tag                             |
-| `entity_hide_event`          | input_boolean | False         | Hide lunar events tag                         |
-| `entity_hide_isveg`          | input_boolean | True          | Hide vegetarian day status tag                |
-
+| Name                         | Type          | Default value | Description                                    |
+| ---------------------------- | ------------- | :-----------: | ---------------------------------------------- |
+| `entity_use_component`       | input_boolean |     True      | Use component                                  |
+| `entity_component_connected` | input_boolean |      N/A      | Get status component connection                |
+| `entity_theme`               | input_select  |   standard    | Calendar Theme, other load file ./themes/\*.js |
+| `entity_hide_event`          | input_text    |     False     | Hide lunar events tag                          |
+| `entity_textpanel`           | any sensor    |      N/A      | Show value (ex: sensor.vn_calendar_day_type)   |
+| `entity_theme_nocache`       | input_boolean |     False     | Not use theme cache                            |
+| `entity_readonly`            | input_boolean |     False     | Disable click on calendar                      |
+| `entity_hide_goodhour`       | input_boolean |     False     | Hide good hour tag                             |
+| `entity_hide_goodday`        | input_boolean |     True      | Hide good day tag                              |
+| `entity_hide_event`          | input_boolean |     False     | Hide lunar events tag                          |
+| `entity_hide_isveg`          | input_boolean |     True      | Hide vegetarian day status tag                 |
 
 ### 📦 Integration:
 
