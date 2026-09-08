@@ -1406,7 +1406,7 @@ class VNLunarCalendar extends HTMLElement {
     let html = `<div class="calendar-grid ${extraClass}">`;
 
     // header
-    const days = ["T 2", "T 3", "T 4", "T 5", "T 6", "T 7", "CN"];
+    const days = ["THỨ 2", "THỨ 3", "THỨ 4", "THỨ 5", "THỨ 6", "THỨ 7", "CN"];
     html += days.map((d) => `<div class="header">${d}</div>`).join("");
 
     // today
@@ -1678,313 +1678,17 @@ class VNLunarCalendar extends HTMLElement {
     };
   }
 
-  theme_autumn_festival(bg) {
-
-    return {
-      card: `background: url('${bg}');
-                background-position: center center;
-                background-size: cover;
-                background-repeat: no-repeat;
-                /*background-attachment: fixed;*/`,
-
-      daybox:
-        "justify-content: space-evenly; height:12rem;",
-      daybox_dayinfo: "min-width: 14rem; text-align:center;",
-      daybox_solar: "font-size:1.2em; color: white;",
-      daybox_lunar: "font-size:1.5em; color: white; font-weight: bold",
-      daybox_vegday: "color: orange",
-      daybox_daycanchi: "color: #ffd641",
-      daybox_monthcanchi: "color: #ffd641",
-
-      daybox_dayextra_tags: "background: rgba(145, 73, 14, 0.5); color: #b2fe97",
-      daybox_dayextra_textpanel: "background: rgba(145, 73, 14, 0.5);",
-
-      calendarbox:
-        "",
-      calendarbox_nav: "background: rgba(224, 219, 59, 0.45);",
-      calendarbox_nav_month: "color: #feffa9;",
-      calendarbox_nav_button: " color: #feffa9",
-
-      calendarbox_header: "background: rgba(224, 219, 59, 0.45); color: yellow;",
-      calendarbox_header_sunday: "color: #00fc19",
-      calendarbox_cell:
-        "border: 1.5px solid rgba(212, 255, 0, 0.38); background: rgba(255, 252, 252, 0.16); color: #ffe897;",
-      calendarbox_cell_hover: "background: rgba(244, 135, 39, 0.2);",
-
-      calendarbox_solarday: "font-size: .8rem;text-align: center; font-weight: bold;",
-      calendarbox_lunarday: "font-size: .6rem; text-align: center; ",
-      calendarbox_sunday: "color: #f2c41f; background: rgba(255, 172, 64, 0.5)",
-      calendarbox_today: "background: rgba(179, 255, 64, 0.85); color: #efffe7;",
-      calendarbox_selected: "border: 1.5px solid #ffea00; color: #ffffff",
-
-      calendarbox_dotveg: "background: orange;",
-      calendarbox_dotevent: "background: purple",
-      calendarbox_othermonth_solar: "color: rgba(166, 163, 63, 0.7);",
-      calendarbox_othermonth_lunar: "color: rgba(210, 255, 120, 0.7);",
-      calendarbox_firstmonth_solar: "text-decoration: underline;",
-      calendarbox_firstmonth_lunar: "text-decoration: underline;",
-    };
-  }
-
-  theme_newyear_day(bg) {
-
-    return {
-      card: `background: url('${bg}') /*, linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.15))*/;
-                background-position: center center;
-                background-size: cover;
-                background-repeat: no-repeat;
-                /*background-attachment: fixed;*/`,
-
-      daybox:
-        "justify-content: space-evenly; height:12rem; /*background: rgba(255, 221, 0, 0.5); backdrop-filter: blur(3px);*/",
-      daybox_dayinfo: "min-width: 14rem; text-align:center;",
-      daybox_solar: "font-size:1.2em; color: #ffd641;",
-      daybox_lunar: "font-size:1.5em; color: gold; font-weight: bold",
-      daybox_vegday: "color: orange",
-      daybox_daycanchi: "color: #00ff15",
-      daybox_monthcanchi: "color: #00ff15",
-
-      daybox_dayextra_tags: "background: rgba(156, 15, 15, 0.5); color: #f6ff00",
-      daybox_dayextra_textpanel: "background: rgba(156, 15, 15, 0.5);",
-
-      calendarbox:
-        "background: rgba(255, 94, 0, 0.45); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(247, 251, 4, 0.22);",
-      calendarbox_nav: "background: rgba(255, 98, 0, 0.7);",
-      calendarbox_nav_month: "color: #ddff00;",
-      calendarbox_nav_button: " color: #ddff00",
-
-      calendarbox_header: "background: rgba(255, 98, 0, 0.7); color: #f0f9d5;",
-      calendarbox_header_sunday: "color: yellow",
-      calendarbox_cell:
-        "border: 1.5px solid rgba(212, 255, 0, 0.2); background: rgba(255, 252, 252, 0.16); color: #1eff00e0;",
-      calendarbox_cell_hover: "background: rgba(244, 135, 39, 0.2);",
-
-      calendarbox_solarday: "font-size: .8rem;text-align: center; font-weight: bold;",
-      calendarbox_lunarday: "font-size: .6rem; text-align: center; color: #e8ff3b;",
-      calendarbox_sunday: "color: #ffffff; background: rgba(255, 172, 64, 0.5)",
-      calendarbox_today: "background: rgba(255, 172, 64, 0.85); color: #ffffff;",
-      calendarbox_selected: "border: 1.5px solid #ffea00; color: #ffffff",
-
-      calendarbox_dotveg: "background: orange;",
-      calendarbox_dotevent: "background: purple",
-      calendarbox_othermonth_solar: "color: rgba(123, 166, 63, 0.7);",
-      calendarbox_othermonth_lunar: "color: rgba(170, 255, 0, 0.7);",
-      calendarbox_firstmonth_solar: "text-decoration: underline;",
-      calendarbox_firstmonth_lunar: "text-decoration: underline;",
-    };
-  }
-
-  theme_newyear_night(bg) {
-
-    return {
-      card: `background: url('${bg}') /*, linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.15))*/;
-                background-position: center center;
-                background-size: cover;
-                background-repeat: no-repeat;
-                /*background-attachment: fixed;*/`,
-
-      daybox:
-        "justify-content: space-evenly; height:12rem; /*background: rgba(255, 221, 0, 0.5); backdrop-filter: blur(3px);*/",
-      daybox_dayinfo: "min-width: 14rem; text-align:center;",
-      daybox_solar: "font-size:1.2em; color: #ffd641;",
-      daybox_lunar: "font-size:1.5em; color: gold; font-weight: bold",
-      daybox_vegday: "color: orange",
-      daybox_daycanchi: "color: #00ff15",
-      daybox_monthcanchi: "color: #00ff15",
-
-      daybox_dayextra_tags: "background: rgba(156, 15, 15, 0.5); color: #f6ff00",
-      daybox_dayextra_textpanel: "",
-
-      calendarbox:
-        "backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(251, 82, 4, 0.22);",
-      calendarbox_nav: "background: rgba(255, 98, 0, 0.45);",
-      calendarbox_nav_month: "color: #feffa9;",
-      calendarbox_nav_button: " color: #feffa9",
-
-      calendarbox_header: "background: rgba(255, 98, 0, 0.7); color: #f0f9d5;",
-      calendarbox_header_sunday: "color: yellow",
-      calendarbox_cell:
-        "border: 1.5px solid rgba(212, 255, 0, 0.2); background: rgba(255, 252, 252, 0.16); color: #f93103e0;",
-      calendarbox_cell_hover: "background: rgba(244, 135, 39, 0.2);",
-
-      calendarbox_solarday: "font-size: .8rem;text-align: center; font-weight: bold;",
-      calendarbox_lunarday: "font-size: .6rem; text-align: center; color: #9e370a;",
-      calendarbox_sunday: "color: #ffffff; background: rgba(255, 172, 64, 0.5)",
-      calendarbox_today: "background: rgba(255, 172, 64, 0.85); color: #ffffff;",
-      calendarbox_selected: "border: 1.5px solid #ffea00; color: #ffffff",
-
-      calendarbox_dotveg: "background: orange;",
-      calendarbox_dotevent: "background: purple",
-      calendarbox_othermonth_solar: "color: rgba(123, 166, 63, 0.7);",
-      calendarbox_othermonth_lunar: "color: rgba(170, 255, 0, 0.7);",
-      calendarbox_firstmonth_solar: "text-decoration: underline;",
-      calendarbox_firstmonth_lunar: "text-decoration: underline;",
-    };
-  }
-
-  theme_standard_night(bg) {
-
-    return {
-      card: ` background: url('${bg}'), linear-gradient(rgba(10, 25, 50, 0.55), rgba(10, 25, 50, 0.55));
-                background-position: center center;
-                background-size: cover;
-                background-repeat: no-repeat;
-                /*background-attachment: fixed;*/`,
-
-      daybox:
-        "justify-content: space-evenly; height:10rem; background: rgba(0,0,0,0.1); /*backdrop-filter: blur(8px);*/",
-      daybox_dayinfo: "min-width: 14rem; text-align:center;",
-      daybox_solar: "font-size:1.2em; color: #E6F0FF",
-      daybox_lunar: "font-size:1.5em; color: #FFFFFF",
-      daybox_vegday: "color: orange",
-      daybox_daycanchi: "color: #A8C7FF",
-      daybox_monthcanchi: "color: #A8C7FF",
-
-      daybox_dayextra_tags: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
-      daybox_dayextra_textpanel: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
-
-      calendarbox:
-        "background: rgba(20,40,70,0.45); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
-      calendarbox_nav: "background: rgba(111,163,197,0.15);",
-      calendarbox_nav_month: "color: #E6F0FF",
-      calendarbox_nav_button: "color: #a7b7ff",
-
-      calendarbox_header: "background: linear-gradient(135deg, #3F7FA6, #6FA3C5); color: #fff;",
-      calendarbox_header_sunday: "color: orange",
-      calendarbox_cell:
-        "border: 1.5px solid rgba(63, 127, 166, 0.2); background: rgba(255,255,255,0.05); color: #CFE3FF;;",
-      calendarbox_cell_hover: "background: rgba(111,163,197,0.2);",
-
-      calendarbox_solarday: "text-align: center; font-weight: bold;",
-      calendarbox_lunarday: "font-size: .8rem; text-align: right; margin-right:20px",
-      calendarbox_sunday: "color: orange",
-      calendarbox_today: "background: rgba(77,163,255,0.8); color: #fff;",
-      calendarbox_selected: "border: 1.5px solid #3F7FA6; background: rgba(111,163,197,0.15);",
-
-      calendarbox_dotveg: "background: #FBBF24;",
-      calendarbox_dotevent: "background: #C084FC",
-      calendarbox_othermonth_solar: "color: rgba(108, 216, 255, .2);",
-      calendarbox_othermonth_lunar: "color: rgba(108, 216, 255, .2);",
-      calendarbox_firstmonth_solar: "text-decoration: underline;",
-      calendarbox_firstmonth_lunar: "text-decoration: underline;",
-    };
-  }
-
-  theme_standard_night_15(bg) {
-
-    return {
-      card: `background: url('${bg}'), linear-gradient(rgba(10, 25, 50, 0.55), rgba(10, 25, 50, 0.55));
-                background-position: center center;
-                background-size: cover;
-                background-repeat: no-repeat;
-                /*background-attachment: fixed;*/`,
-
-      daybox:
-        "justify-content: space-evenly; height:10rem; background: rgba(0,0,0,0.1); /*backdrop-filter: blur(8px);*/",
-      daybox_dayinfo: "min-width: 14rem; text-align:center;",
-      daybox_solar: "font-size:1.2em; color: #E6F0FF",
-      daybox_lunar: "font-size:1.5em; color: #FFFFFF",
-      daybox_vegday: "color: orange",
-      daybox_daycanchi: "color: #A8C7FF",
-      daybox_monthcanchi: "color: #A8C7FF",
-
-      daybox_dayextra_tags: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
-      daybox_dayextra_textpanel: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
-
-      calendarbox:
-        "background: rgba(20,40,70,0.45); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
-      calendarbox_nav: "background: rgba(111,163,197,0.15);",
-      calendarbox_nav_month: "color: #E6F0FF",
-      calendarbox_nav_button: "color: #a7b7ff",
-
-      calendarbox_header: "background: linear-gradient(135deg, #3F7FA6, #6FA3C5); color: #fff;",
-      calendarbox_header_sunday: "color: orange",
-      calendarbox_cell:
-        "border: 1.5px solid rgba(63, 127, 166, 0.2); background: rgba(255,255,255,0.05); color: #CFE3FF;;",
-      calendarbox_cell_hover: "background: rgba(111,163,197,0.2);",
-
-      calendarbox_solarday: "text-align: center; font-weight: bold;",
-      calendarbox_lunarday: "font-size: .8rem; text-align: right; margin-right:20px",
-      calendarbox_sunday: "color: orange",
-      calendarbox_today: "background: rgba(77,163,255,0.8); color: #fff;",
-      calendarbox_selected: "border: 1.5px solid #3F7FA6; background: rgba(111,163,197,0.15);",
-
-      calendarbox_dotveg: "background: #FBBF24;",
-      calendarbox_dotevent: "background: #C084FC",
-      calendarbox_othermonth_solar: "color: rgba(108, 216, 255, .2);",
-      calendarbox_othermonth_lunar: "color: rgba(108, 216, 255, .2);",
-      calendarbox_firstmonth_solar: "text-decoration: underline;",
-      calendarbox_firstmonth_lunar: "text-decoration: underline;",
-    };
-  }
-
-  theme_standard_day(bg) {
-
-    return {
-      card: `background: url('${bg}') /*, linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.15))*/;
-                background-position: center center;
-                background-size: cover;
-                background-repeat: no-repeat;
-                /*background-attachment: fixed;*/`,
-
-      daybox:
-        "justify-content: space-evenly; height:10rem;/*background: rgba(255,255,255,0.8); backdrop-filter: blur(8px);*/",
-      daybox_dayinfo: "min-width: 14rem; text-align:center;",
-      daybox_solar: "font-size:1.2em; color: #3F7FA6",
-      daybox_lunar: "font-size:1.5em; color: #1F5F8B; font-weight: bold",
-      daybox_vegday: "color: orange",
-      daybox_daycanchi: "color: #1F5F8B",
-      daybox_monthcanchi: "color: #1F5F8B",
-
-      daybox_dayextra_tags: "background: rgba(130, 163, 185, 0.5); color: #ffffff",
-      daybox_dayextra_textpanel: "background: rgba(130, 163, 185, 0.5); color: #ffffff",
-
-      calendarbox:
-        "background: rgba(255,255,255,0.5); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
-      calendarbox_nav: "background: rgba(111,163,197,0.15);",
-      calendarbox_nav_month: "color: #1F5F8B",
-      calendarbox_nav_button: " color: #5B7C99",
-
-      calendarbox_header: "background: linear-gradient(135deg, #3F7FA6, #6FA3C5); color: #fff;",
-      calendarbox_header_sunday: "color: orange",
-      calendarbox_cell:
-        "border: 1.5px solid rgba(63, 127, 166, 0.2); background: rgba(255,255,255,0.6); color: #3F7FA6;",
-      calendarbox_cell_hover: "background: rgba(111,163,197,0.2);",
-
-      calendarbox_solarday: "text-align: center; font-weight: bold;",
-      calendarbox_lunarday: "font-size: .8rem; text-align: right; margin-right:20px",
-      calendarbox_sunday: "color: orange",
-      calendarbox_today: "background: rgba(63, 127, 166, .6); color: #fff;",
-      calendarbox_selected: "border: 1.5px solid #3F7FA6; background: rgba(111,163,197,0.15);",
-
-      calendarbox_dotveg: "background: orange;",
-      calendarbox_dotevent: "background: purple",
-      calendarbox_othermonth_solar: "color: rgba(63, 127, 166, .2);",
-      calendarbox_othermonth_lunar: "color: rgba(63, 127, 166, .2);",
-      calendarbox_firstmonth_solar: "text-decoration: underline;",
-      calendarbox_firstmonth_lunar: "text-decoration: underline;",
-    };
-  }
-
   async styleStandard() {
-
+    // console.log('styleStandard');
     const bg_day =
       this.config?.background_day ||
       "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/whiteflower.jpg";
-
     const bg_night =
       this.config?.background_night ||
-      "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg";
-
-    const bg_night_15 =
-      this.config?.background_night_15 ||
       "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_fullmoon2.jpg";
-
-    const bg_autumn_night_15 = this.config?.background_day || "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/autumn_festival.jpg";
-
-    const bg_newyear_day = this.config?.background_day || "https://media.istockphoto.com/id/1194200347/vi/vec-to/phong-c%C3%A1ch-ngh%E1%BB%87-thu%E1%BA%ADt-gi%E1%BA%A5y-n%C4%83m-%C3%A2m-l%E1%BB%8Bch.jpg?s=1024x1024&w=is&k=20&c=YVtZHq0xLME0hv3mdKw4pOtwe4HYFyehWsBdBtFYz7E=";
-
-    const bg_newyear_night = this.config?.background_day || "https://media.istockphoto.com/id/1290274830/vi/anh/ch%C3%BAc-m%E1%BB%ABng-n%C4%83m-m%E1%BB%9Bi-ho%E1%BA%B7c-trung-thu-trang-tr%C3%AD-n%E1%BB%81n-v%E1%BB%9Bi-gi%E1%BA%A5y-%C4%91%E1%BB%8F-tay-qu%E1%BA%A1t-%C3%B4-v%C3%A0-%C4%91%C3%A8n-l%E1%BB%93ng-sao-ch%C3%A9p-v%C4%83n.jpg?s=1024x1024&w=is&k=20&c=tP2yjEsLVCP8sCsCdckCoem2sDy9jyKTpluIaVzE4Rg="
+    const bg_night_half =
+      this.config?.background_nighthalf ||
+      "https://raw.githubusercontent.com/hlnguyensinh/HA_VNLunarCalendar/main/assets/night_halfmoon.jpg";
 
     const now = this.presentDate;
 
@@ -1998,29 +1702,145 @@ class VNLunarCalendar extends HTMLElement {
 
     const dayinfo = await this.clsLunarCache.get(now.getDate(), now.getMonth() + 1, now.getFullYear());
 
-    let style = isNight ? "night" + (dayinfo.lunar.day == 15 ? "-15" : "") : "day" + + (dayinfo.lunar.day == 15 ? "-15" : "");
+    let style = isNight ? "night" + (dayinfo.lunar.day == 15 ? "-15" : "") : "";
 
-    if (dayinfo.lunar.month == 1 && (dayinfo.lunar.day >= 1 && dayinfo.lunar.day <= 3)) {
-      switch (style) {
-        case "night-15":
-        case "night":
-          return this.theme_newyear_night(bg_newyear_night);
-        default:
-          return this.theme_newyear_day(bg_newyear_day);
-      }
-    } else if (dayinfo.lunar.month == 7 && dayinfo.lunar.day == 15) {
-      return this.theme_autumn_festival(bg_autumn_night_15);
-    } else {
-      switch (style) {
-        case "night-15":
-          return this.theme_standard_night_15(bg_night_15);
-        case "night":
-          return this.theme_standard_night(bg_night);
-        default:
-          return this.theme_standard_day(bg_day);
-      }
+    switch (style) {
+      case "night-15":
+        return {
+          card: `background: url('${bg_night}'), linear-gradient(rgba(10, 25, 50, 0.55), rgba(10, 25, 50, 0.55));
+                background-position: center center;
+                background-size: cover;
+                background-repeat: no-repeat;
+                /*background-attachment: fixed;*/`,
+
+          daybox:
+            "justify-content: space-evenly; height:10rem; background: rgba(0,0,0,0.1); /*backdrop-filter: blur(8px);*/",
+          daybox_dayinfo: "min-width: 14rem; text-align:center;",
+          daybox_solar: "font-size:1.2em; color: #E6F0FF",
+          daybox_lunar: "font-size:1.5em; color: #FFFFFF",
+          daybox_vegday: "color: orange",
+          daybox_daycanchi: "color: #A8C7FF",
+          daybox_monthcanchi: "color: #A8C7FF",
+
+          daybox_dayextra_tags: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
+          daybox_dayextra_textpanel: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
+
+          calendarbox:
+            "background: rgba(20,40,70,0.45); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
+          calendarbox_nav: "background: rgba(111,163,197,0.15);",
+          calendarbox_nav_month: "color: #E6F0FF",
+          calendarbox_nav_button: "color: #a7b7ff",
+
+          calendarbox_header: "background: linear-gradient(135deg, #3F7FA6, #6FA3C5); color: #fff;",
+          calendarbox_header_sunday: "color: orange",
+          calendarbox_cell:
+            "border: 1.5px solid rgba(63, 127, 166, 0.2); background: rgba(255,255,255,0.05); color: #CFE3FF;;",
+          calendarbox_cell_hover: "background: rgba(111,163,197,0.2);",
+
+          calendarbox_solarday: "text-align: center; font-weight: bold;",
+          calendarbox_lunarday: "font-size: .8rem; text-align: right; margin-right:20px",
+          calendarbox_sunday: "color: orange",
+          calendarbox_today: "background: rgba(77,163,255,0.8); color: #fff;",
+          calendarbox_selected: "border: 1.5px solid #3F7FA6; background: rgba(111,163,197,0.15);",
+
+          calendarbox_dotveg: "background: #FBBF24;",
+          calendarbox_dotevent: "background: #C084FC",
+          calendarbox_othermonth_solar: "color: rgba(108, 216, 255, .2);",
+          calendarbox_othermonth_lunar: "color: rgba(108, 216, 255, .2);",
+          calendarbox_firstmonth_solar: "text-decoration: underline;",
+          calendarbox_firstmonth_lunar: "text-decoration: underline;",
+        };
+      case "night":
+        return {
+          card: ` background: url('${bg_night_half}'), linear-gradient(rgba(10, 25, 50, 0.55), rgba(10, 25, 50, 0.55));
+                background-position: center center;
+                background-size: cover;
+                background-repeat: no-repeat;
+                /*background-attachment: fixed;*/`,
+
+          daybox:
+            "justify-content: space-evenly; height:10rem; background: rgba(0,0,0,0.1); /*backdrop-filter: blur(8px);*/",
+          daybox_dayinfo: "min-width: 14rem; text-align:center;",
+          daybox_solar: "font-size:1.2em; color: #E6F0FF",
+          daybox_lunar: "font-size:1.5em; color: #FFFFFF",
+          daybox_vegday: "color: orange",
+          daybox_daycanchi: "color: #A8C7FF",
+          daybox_monthcanchi: "color: #A8C7FF",
+
+          daybox_dayextra_tags: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
+          daybox_dayextra_textpanel: "background: rgba(63, 127, 166,.5); color: #E6F0FF",
+
+          calendarbox:
+            "background: rgba(20,40,70,0.45); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
+          calendarbox_nav: "background: rgba(111,163,197,0.15);",
+          calendarbox_nav_month: "color: #E6F0FF",
+          calendarbox_nav_button: "color: #a7b7ff",
+
+          calendarbox_header: "background: linear-gradient(135deg, #3F7FA6, #6FA3C5); color: #fff;",
+          calendarbox_header_sunday: "color: orange",
+          calendarbox_cell:
+            "border: 1.5px solid rgba(63, 127, 166, 0.2); background: rgba(255,255,255,0.05); color: #CFE3FF;;",
+          calendarbox_cell_hover: "background: rgba(111,163,197,0.2);",
+
+          calendarbox_solarday: "text-align: center; font-weight: bold;",
+          calendarbox_lunarday: "font-size: .8rem; text-align: right; margin-right:20px",
+          calendarbox_sunday: "color: orange",
+          calendarbox_today: "background: rgba(77,163,255,0.8); color: #fff;",
+          calendarbox_selected: "border: 1.5px solid #3F7FA6; background: rgba(111,163,197,0.15);",
+
+          calendarbox_dotveg: "background: #FBBF24;",
+          calendarbox_dotevent: "background: #C084FC",
+          calendarbox_othermonth_solar: "color: rgba(108, 216, 255, .2);",
+          calendarbox_othermonth_lunar: "color: rgba(108, 216, 255, .2);",
+          calendarbox_firstmonth_solar: "text-decoration: underline;",
+          calendarbox_firstmonth_lunar: "text-decoration: underline;",
+        };
+      default:
+        return {
+          card: `background: url('${bg_day}') /*, linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.15))*/;
+                background-position: center center;
+                background-size: cover;
+                background-repeat: no-repeat;
+                /*background-attachment: fixed;*/`,
+
+          daybox:
+            "justify-content: space-evenly; height:10rem;/*background: rgba(255,255,255,0.8); backdrop-filter: blur(8px);*/",
+          daybox_dayinfo: "min-width: 14rem; text-align:center;",
+          daybox_solar: "font-size:1.2em; color: #3F7FA6",
+          daybox_lunar: "font-size:1.5em; color: #1F5F8B; font-weight: bold",
+          daybox_vegday: "color: orange",
+          daybox_daycanchi: "color: #1F5F8B",
+          daybox_monthcanchi: "color: #1F5F8B",
+
+          daybox_dayextra_tags: "background: rgba(130, 163, 185, 0.5); color: #ffffff",
+          daybox_dayextra_textpanel: "background: rgba(130, 163, 185, 0.5); color: #ffffff",
+
+          calendarbox:
+            "background: rgba(255,255,255,0.5); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(31,95,139,0.15);",
+          calendarbox_nav: "background: rgba(111,163,197,0.15);",
+          calendarbox_nav_month: "color: #1F5F8B",
+          calendarbox_nav_button: " color: #5B7C99",
+
+          calendarbox_header: "background: linear-gradient(135deg, #3F7FA6, #6FA3C5); color: #fff;",
+          calendarbox_header_sunday: "color: orange",
+          calendarbox_cell:
+            "border: 1.5px solid rgba(63, 127, 166, 0.2); background: rgba(255,255,255,0.6); color: #3F7FA6;",
+          calendarbox_cell_hover: "background: rgba(111,163,197,0.2);",
+
+          calendarbox_solarday: "text-align: center; font-weight: bold;",
+          calendarbox_lunarday: "font-size: .8rem; text-align: right; margin-right:20px",
+          calendarbox_sunday: "color: orange",
+          calendarbox_today: "background: rgba(63, 127, 166, .6); color: #fff;",
+          calendarbox_selected: "border: 1.5px solid #3F7FA6; background: rgba(111,163,197,0.15);",
+
+          calendarbox_dotveg: "background: orange;",
+          calendarbox_dotevent: "background: purple",
+          calendarbox_othermonth_solar: "color: rgba(63, 127, 166, .2);",
+          calendarbox_othermonth_lunar: "color: rgba(63, 127, 166, .2);",
+          calendarbox_firstmonth_solar: "text-decoration: underline;",
+          calendarbox_firstmonth_lunar: "text-decoration: underline;",
+        };
     }
-
   }
 
   async importTheme(theme) {
@@ -2144,6 +1964,8 @@ class VNLunarCalendar extends HTMLElement {
         .vn-lunar-card .daybox .dayextra .textpanel {
           ${st.daybox_dayextra_textpanel}
         }
+
+        
 
         /* --------- calendarbox -------- */
         .vn-lunar-card .calendarbox {
