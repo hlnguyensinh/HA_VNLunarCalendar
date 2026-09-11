@@ -2303,8 +2303,7 @@ class VNLunarCalendar extends HTMLElement {
     const key = "entity_hide_goodhour";
     const data = this.getEntityOnOff(key);
 
-    // this.entitiescache[key] = data;
-    this.entitiescache[key] = false;
+    this.entitiescache[key] = data;
     return this.entitiescache[key];
   }
 
@@ -2312,8 +2311,7 @@ class VNLunarCalendar extends HTMLElement {
     const key = "entity_hide_goodday";
     const data = this.getEntityOnOff(key, true);
 
-    // this.entitiescache[key] = data;
-    this.entitiescache[key] = false;
+    this.entitiescache[key] = data;
     return this.entitiescache[key];
   }
 
@@ -2321,8 +2319,7 @@ class VNLunarCalendar extends HTMLElement {
     const key = "entity_hide_event";
     const data = this.getEntityOnOff(key);
 
-    // this.entitiescache[key] = data;
-    this.entitiescache[key] = false;
+    this.entitiescache[key] = data;
     return this.entitiescache[key];
   }
 
@@ -2330,8 +2327,7 @@ class VNLunarCalendar extends HTMLElement {
     const key = "entity_hide_isveg";
     const data = this.getEntityOnOff(key, true);
 
-    // this.entitiescache[key] = data;
-    this.entitiescache[key] = false;
+    this.entitiescache[key] = data;
     return this.entitiescache[key];
   }
 
