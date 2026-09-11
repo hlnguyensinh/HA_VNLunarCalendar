@@ -84,3 +84,6 @@
 | `entity_hide_event`          | input_text    | False         | Hide lunar events tag                         |          |
 | `entity_textpanel`           | any sensor    | N/A           | Show value (ex: sensor.vn_calendar_day_type)  |          |
 | `entity_theme_nocache`       | input_boolean | False         | Not use theme cache                           |          |
+
+## [1.2.1] - 2026-09-08
+- Add autumn festival and lunar newyear style to standard theme.

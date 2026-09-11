@@ -1,6 +1,6 @@
 // ======================= COMMON =======================
 const TIME_ZONE = 7;
-// const VERSION = "1.2.0";
+// const VERSION = "1.2.1";
 
 // console.log(`VN Lunar Calendar version: ${VERSION}`);
 // ======================= VNCalendarComponent =======================
@@ -1690,22 +1690,22 @@ class VNLunarCalendar extends HTMLElement {
       daybox:
         "justify-content: space-evenly; height:12rem;",
       daybox_dayinfo: "min-width: 14rem; text-align:center;",
-      daybox_solar: "font-size:1.2em; color: white;",
-      daybox_lunar: "font-size:1.5em; color: white; font-weight: bold",
-      daybox_vegday: "color: orange",
-      daybox_daycanchi: "color: #ffd641",
-      daybox_monthcanchi: "color: #ffd641",
+      daybox_solar: "font-size:1.2em; color: #ffc400;",
+      daybox_lunar: "font-size:1.5em; color: #2bff00;",
+      daybox_vegday: "color: #2bff00",
+      daybox_daycanchi: "color: #ffc400;",
+      daybox_monthcanchi: "color: #ffc400",
 
-      daybox_dayextra_tags: "background: rgba(145, 73, 14, 0.5); color: #b2fe97",
-      daybox_dayextra_textpanel: "background: rgba(145, 73, 14, 0.5);",
+      daybox_dayextra_tags: "background: #adf19f37; color: #d9ff00",
+      daybox_dayextra_textpanel: "background: #2bff003d;",
 
       calendarbox:
         "",
-      calendarbox_nav: "background: rgba(224, 219, 59, 0.45);",
+      calendarbox_nav: "background: rgba(43, 255, 0, 0.54)",
       calendarbox_nav_month: "color: #feffa9;",
       calendarbox_nav_button: " color: #feffa9",
 
-      calendarbox_header: "background: rgba(224, 219, 59, 0.45); color: yellow;",
+      calendarbox_header: "background: rgb(255, 132, 0); color: yellow;",
       calendarbox_header_sunday: "color: #00fc19",
       calendarbox_cell:
         "border: 1.5px solid rgba(212, 255, 0, 0.38); background: rgba(255, 252, 252, 0.16); color: #ffe897;",
@@ -2019,6 +2019,7 @@ class VNLunarCalendar extends HTMLElement {
         default:
           return this.theme_standard_day(bg_day);
       }
+
     }
 
   }
@@ -2295,39 +2296,43 @@ class VNLunarCalendar extends HTMLElement {
     const data = this.getEntityState(key);
 
     this.entitiescache[key] = data;
-    return data;
+    return this.entitiescache[key];
   }
 
   getEntity_HideGoodHour() {
     const key = "entity_hide_goodhour";
     const data = this.getEntityOnOff(key);
 
-    this.entitiescache[key] = data;
-    return data;
+    // this.entitiescache[key] = data;
+    this.entitiescache[key] = false;
+    return this.entitiescache[key];
   }
 
   getEntity_HideGoodDay() {
     const key = "entity_hide_goodday";
     const data = this.getEntityOnOff(key, true);
 
-    this.entitiescache[key] = data;
-    return data;
+    // this.entitiescache[key] = data;
+    this.entitiescache[key] = false;
+    return this.entitiescache[key];
   }
 
   getEntity_HideEvent() {
     const key = "entity_hide_event";
     const data = this.getEntityOnOff(key);
 
-    this.entitiescache[key] = data;
-    return data;
+    // this.entitiescache[key] = data;
+    this.entitiescache[key] = false;
+    return this.entitiescache[key];
   }
 
   getEntity_HideIsVeg() {
     const key = "entity_hide_isveg";
     const data = this.getEntityOnOff(key, true);
 
-    this.entitiescache[key] = data;
-    return data;
+    // this.entitiescache[key] = data;
+    this.entitiescache[key] = false;
+    return this.entitiescache[key];
   }
 
   getEntity_Readonly() {
@@ -2335,7 +2340,7 @@ class VNLunarCalendar extends HTMLElement {
     const data = this.getEntityOnOff(key);
 
     this.entitiescache[key] = data;
-    return data;
+    return this.entitiescache[key];
   }
 
   getEntity_Theme() {
@@ -2343,7 +2348,7 @@ class VNLunarCalendar extends HTMLElement {
     const data = this.getEntityState(key, 'standard');
 
     this.entitiescache[key] = data;
-    return data;
+    return this.entitiescache[key];
   }
 
   getEntity_UseComponent() {
@@ -2351,7 +2356,7 @@ class VNLunarCalendar extends HTMLElement {
     const data = this.getEntityOnOff(key);
 
     this.entitiescache[key] = data;
-    return data;
+    return this.entitiescache[key];
   }
 
   getEntity_ThemeNoCache() {
@@ -2359,7 +2364,7 @@ class VNLunarCalendar extends HTMLElement {
     const data = this.getEntityOnOff(key);
 
     this.entitiescache[key] = data;
-    return data;
+    return this.entitiescache[key];
   }
 
   setEntity_SelectedLunar(value) {
