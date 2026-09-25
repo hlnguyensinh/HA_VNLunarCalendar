@@ -1,6 +1,6 @@
 // ======================= COMMON =======================
 const TIME_ZONE = 7;
-// const VERSION = "1.2.1";
+// const VERSION = "1.2.3";
 
 // console.log(`VN Lunar Calendar version: ${VERSION}`);
 // ======================= VNCalendarComponent =======================
